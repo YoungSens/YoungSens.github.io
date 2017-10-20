@@ -86,19 +86,16 @@
 
 
 
-<meta name="description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。
-NSCache介绍与基本使用这是一个非常简单的缓存管理类，以key-value对的形">
+<meta name="description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NSCache相关解读">
 <meta property="og:url" content="http://yoursite.com/2016/07/17/NSCache相关解读/index.html">
 <meta property="og:site_name" content="ySenIn's Blog">
-<meta property="og:description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。
-NSCache介绍与基本使用这是一个非常简单的缓存管理类，以key-value对的形">
-<meta property="og:updated_time" content="2016-07-18T16:52:14.000Z">
+<meta property="og:description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。">
+<meta property="og:updated_time" content="2017-10-20T03:11:40.727Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NSCache相关解读">
-<meta name="twitter:description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。
-NSCache介绍与基本使用这是一个非常简单的缓存管理类，以key-value对的形">
+<meta name="twitter:description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。">
 
 
 
@@ -323,6 +320,7 @@ NSCache介绍与基本使用这是一个非常简单的缓存管理类，以key-
 
       
         <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。</p>
+<a id="more"></a>
 <h3 id="NSCache介绍与基本使用"><a href="#NSCache介绍与基本使用" class="headerlink" title="NSCache介绍与基本使用"></a>NSCache介绍与基本使用</h3><p>这是一个非常简单的缓存管理类，以key-value对的形式进行存储。是不是感觉和NSMutableDictionary非常相似呢？没错，在iOS 4之前，苹果就是以NSMutableDictionary的形势做缓存的，至于两者的区别会在接下来的文章里提到。在项目中，新建一个NSCache对象，点击进入NSCache类中，我们就可以看到NSCache给我们提供的几个简单的属性和方法。</p>
 <h4 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h4><blockquote>
 <p>@property (copy) NSString *name; // 名称<br>@property (nullable, assign) id<nscachedelegate> delegate; // 代理<br>@property NSUInteger totalCostLimit;    // 最大缓存容量上限<br>@property NSUInteger countLimit;    // 最大缓存容量对象个数<br>@property BOOL evictsObjectsWithDiscardedContent; // 是否允许退出对象丢弃缓存内容</nscachedelegate></p>

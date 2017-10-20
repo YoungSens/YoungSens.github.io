@@ -87,21 +87,18 @@
 
 
 <meta name="description" content="源码参见：https://github.com/kimziv/PinYin4Objc.git版本：1.1
-描述汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。
-前注常量、枚">
+描述汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="pinyin4objc源码阅读">
 <meta property="og:url" content="http://yoursite.com/2017/10/19/pinyin4objc源码阅读/index.html">
 <meta property="og:site_name" content="ySenIn's Blog">
 <meta property="og:description" content="源码参见：https://github.com/kimziv/PinYin4Objc.git版本：1.1
-描述汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。
-前注常量、枚">
-<meta property="og:updated_time" content="2017-10-20T01:55:37.517Z">
+描述汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。">
+<meta property="og:updated_time" content="2017-10-20T03:11:52.256Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="pinyin4objc源码阅读">
 <meta name="twitter:description" content="源码参见：https://github.com/kimziv/PinYin4Objc.git版本：1.1
-描述汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。
-前注常量、枚">
+描述汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。">
 
 
 
@@ -327,6 +324,7 @@
       
         <p>源码参见：<a href="https://github.com/kimziv/PinYin4Objc.git" target="_blank" rel="external">https://github.com/kimziv/PinYin4Objc.git</a><br>版本：1.1</p>
 <h3 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h3><p>汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。</p>
+<a id="more"></a>
 <h3 id="前注"><a href="#前注" class="headerlink" title="前注"></a>前注</h3><h4 id="常量、枚举"><a href="#常量、枚举" class="headerlink" title="常量、枚举"></a>常量、枚举</h4><p>在阅读源码之前，我们需要认识一下PinYin4Objc里面的常量以及枚举值：<br></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">#define HANYU_PINYIN @&quot;Hanyu&quot;</span><br><span class="line">#define WADEGILES_PINYIN @&quot;Wade&quot;</span><br><span class="line">#define MPS2_PINYIN @&quot;MPSII&quot;</span><br><span class="line">#define YALE_PINYIN @&quot;Yale&quot;</span><br><span class="line">#define TONGYONG_PINYIN @&quot;Tongyong&quot;</span><br><span class="line">#define GWOYEU_ROMATZYH @&quot;Gwoyeu&quot;</span><br><span class="line"></span><br><span class="line">MPS2_PINYIN：注音符号第二式</span><br><span class="line">YALE_PINYIN：耶鲁拼法</span><br><span class="line">HANYU_PINYIN：汉语拼音</span><br><span class="line">TONGYONG_PINYIN：通用拼音</span><br><span class="line">GWOYEU_ROMATZYH：国语罗马字</span><br><span class="line">WADEGILES_PINYIN：威妥玛拼音(威玛拼法)</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> 音调，例：刘</span><br><span class="line"> */</span><br><span class="line">typedef enum &#123;</span><br><span class="line">  ToneTypeWithToneNumber,   // 用数字表示声调，例如：liu2</span><br><span class="line">  ToneTypeWithoutTone,      // 无音调，例如：liu</span><br><span class="line">  ToneTypeWithToneMark      // 用声调符号表示，例如：liú</span><br><span class="line">&#125; ToneType;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> 大小写，例：国</span><br><span class="line"> */</span><br><span class="line">typedef enum &#123;</span><br><span class="line">    CaseTypeUppercase,  // GUÓ</span><br><span class="line">    CaseTypeLowercase   // guó</span><br><span class="line">&#125; CaseType;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> unicode 的ü 、v 和 u时的显示方式，例：吕</span><br><span class="line"> */</span><br><span class="line">typedef enum &#123;</span><br><span class="line">    VCharTypeWithUAndColon, // lu:3</span><br><span class="line">    VCharTypeWithV,         // lv3</span><br><span class="line">    VCharTypeWithUUnicode   // lü3</span><br><span class="line">&#125; VCharType;</span><br></pre></td></tr></table></figure>
 <p>前面的代码参考<a href="http://www.cnblogs.com/mthoutai/p/6745293.html" target="_blank" rel="external">java 中文转拼音之pinyin4j</a>。当然，在移动端其实并不会使用太多格式，因此简单介绍，并不作说明。详情可以参见外链的文章。</p>

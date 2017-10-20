@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-10-20T01:55:37.517Z</updated>
+  <updated>2017-10-20T03:11:52.256Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,10 +20,11 @@
     <link href="http://yoursite.com/2017/10/19/pinyin4objc%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/"/>
     <id>http://yoursite.com/2017/10/19/pinyin4objc源码阅读/</id>
     <published>2017-10-19T06:43:32.000Z</published>
-    <updated>2017-10-20T01:55:37.517Z</updated>
+    <updated>2017-10-20T03:11:52.256Z</updated>
     
     <content type="html">&lt;p&gt;源码参见：&lt;a href=&quot;https://github.com/kimziv/PinYin4Objc.git&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://github.com/kimziv/PinYin4Objc.git&lt;/a&gt;&lt;br&gt;版本：1.1&lt;/p&gt;
 &lt;h3 id=&quot;描述&quot;&gt;&lt;a href=&quot;#描述&quot; class=&quot;headerlink&quot; title=&quot;描述&quot;&gt;&lt;/a&gt;描述&lt;/h3&gt;&lt;p&gt;汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;前注&quot;&gt;&lt;a href=&quot;#前注&quot; class=&quot;headerlink&quot; title=&quot;前注&quot;&gt;&lt;/a&gt;前注&lt;/h3&gt;&lt;h4 id=&quot;常量、枚举&quot;&gt;&lt;a href=&quot;#常量、枚举&quot; class=&quot;headerlink&quot; title=&quot;常量、枚举&quot;&gt;&lt;/a&gt;常量、枚举&lt;/h4&gt;&lt;p&gt;在阅读源码之前，我们需要认识一下PinYin4Objc里面的常量以及枚举值：&lt;br&gt;&lt;/p&gt;
 &lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;24&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;25&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;26&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;27&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;28&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;29&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;30&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;31&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;33&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;34&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;35&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;36&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;37&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;38&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;39&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;#define HANYU_PINYIN @&amp;quot;Hanyu&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;#define WADEGILES_PINYIN @&amp;quot;Wade&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;#define MPS2_PINYIN @&amp;quot;MPSII&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;#define YALE_PINYIN @&amp;quot;Yale&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;#define TONGYONG_PINYIN @&amp;quot;Tongyong&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;#define GWOYEU_ROMATZYH @&amp;quot;Gwoyeu&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;MPS2_PINYIN：注音符号第二式&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;YALE_PINYIN：耶鲁拼法&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;HANYU_PINYIN：汉语拼音&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;TONGYONG_PINYIN：通用拼音&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;GWOYEU_ROMATZYH：国语罗马字&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;WADEGILES_PINYIN：威妥玛拼音(威玛拼法)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/*&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; 音调，例：刘&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;typedef enum &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  ToneTypeWithToneNumber,   // 用数字表示声调，例如：liu2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  ToneTypeWithoutTone,      // 无音调，例如：liu&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  ToneTypeWithToneMark      // 用声调符号表示，例如：liú&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; ToneType;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/*&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; 大小写，例：国&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;typedef enum &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    CaseTypeUppercase,  // GUÓ&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    CaseTypeLowercase   // guó&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; CaseType;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/*&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; unicode 的ü 、v 和 u时的显示方式，例：吕&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;typedef enum &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    VCharTypeWithUAndColon, // lu:3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    VCharTypeWithV,         // lv3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    VCharTypeWithUUnicode   // lü3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; VCharType;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;前面的代码参考&lt;a href=&quot;http://www.cnblogs.com/mthoutai/p/6745293.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;java 中文转拼音之pinyin4j&lt;/a&gt;。当然，在移动端其实并不会使用太多格式，因此简单介绍，并不作说明。详情可以参见外链的文章。&lt;/p&gt;
@@ -170,7 +171,8 @@
     
     <summary type="html">
     
-      &lt;p&gt;源码参见：&lt;a href=&quot;https://github.com/kimziv/PinYin4Objc.git&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://github.com/kimziv/PinYin4Objc.git&lt;/a&gt;&lt;br&gt;
+      &lt;p&gt;源码参见：&lt;a href=&quot;https://github.com/kimziv/PinYin4Objc.git&quot;&gt;https://github.com/kimziv/PinYin4Objc.git&lt;/a&gt;&lt;br&gt;版本：1.1&lt;/p&gt;
+&lt;h3 id=&quot;描述&quot;&gt;&lt;a href=&quot;#描述&quot; class=&quot;headerlink&quot; title=&quot;描述&quot;&gt;&lt;/a&gt;描述&lt;/h3&gt;&lt;p&gt;汉字转拼音，相信在很多app都会遇到，例如：通讯录、消息、搜索等。汉字转拼音有很多种方式可以是实现，本文所讲的是其中一种；当然，苹果也有自己的实现方式。苹果内部实现就真心不想吐槽了，超级慢，后续会找一些数据来说明。那么，接下来就看看PinYin4Objc是如何实现高效的转化。&lt;/p&gt;
     
     </summary>
     
@@ -210,9 +212,10 @@
     <link href="http://yoursite.com/2016/07/19/SDWebImage%E6%BA%90%E7%A0%81%E4%B9%8BSDImageCache/"/>
     <id>http://yoursite.com/2016/07/19/SDWebImage源码之SDImageCache/</id>
     <published>2016-07-18T16:36:26.000Z</published>
-    <updated>2016-07-18T16:57:34.000Z</updated>
+    <updated>2017-10-20T03:34:17.971Z</updated>
     
     <content type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;SDImageCache类是实现图片缓存的类，此类的缓存分为两种：磁盘缓存、保留在内存。通俗的说就是前者保存在沙盒，后者停留在内存中。问题在于，沙盒读写比较耗时，保存在内存中比较占内存，可能存在因内存过大而崩溃。对于沙盒读写耗时，如果文件不大，手机读写速度快，那也是毫厘之间的时间就能完成的。内存占有率大，这个苹果的NSCache就给我们提供了相应的方法，可以在一定程度上降低内存占有率和防止应用崩溃，关于NSCache可以看另外一篇文章&lt;a href=&quot;http://blog.ysenin.com/2016/07/17/NSCache%E7%9B%B8%E5%85%B3%E8%A7%A3%E8%AF%BB/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;NSCache相关解读&lt;/a&gt;。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;缓存类型&quot;&gt;&lt;a href=&quot;#缓存类型&quot; class=&quot;headerlink&quot; title=&quot;缓存类型&quot;&gt;&lt;/a&gt;缓存类型&lt;/h3&gt;&lt;p&gt;SDImageCache提供了三种枚举类型，如下：&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;// 读取缓存枚举类型&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;typedef NS_ENUM(NSInteger, SDImageCacheType) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    SDImageCacheTypeNone, // image不可用于SDWebImage缓存，但可以从网络下载&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    SDImageCacheTypeDisk, // 图片可以从磁盘缓存空间获取&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    SDImageCacheTypeMemory // 图片从内存空间获取&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;如上，我们读取缓存的时候，可以从网络上下载，从磁盘读区，也可以从内存空间获得。当然，具体是怎样实现由具体的技术实现来完成。&lt;/p&gt;
 &lt;h3 id=&quot;Block&quot;&gt;&lt;a href=&quot;#Block&quot; class=&quot;headerlink&quot; title=&quot;Block&quot;&gt;&lt;/a&gt;Block&lt;/h3&gt;&lt;p&gt;在SDImageCache中，给我们提供了三个block&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;// 通过key查询，缓存（内存和磁盘）是否存在缓存，并返回图片数据和缓存来源&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;typedef void(^SDWebImageQueryCompletedBlock)(UIImage *image, SDImageCacheType cacheType);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;// 检查key是否存在磁盘缓存中&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;typedef void(^SDWebImageCheckCacheCompletionBlock)(BOOL isInCache);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;// 计算磁盘缓存大小，返回磁盘缓存数目和总大小&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;typedef void(^SDWebImageCalculateSizeBlock)(NSUInteger fileCount, NSUInteger totalSize);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
@@ -230,7 +233,7 @@
     
     <summary type="html">
     
-      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;SDImageCache类是实现图片缓存的类，此类的缓存分为两种：磁盘缓存、保留在内存。通俗的说就是前者保存在沙盒，后者停留在内存中。问题在
+      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;SDImageCache类是实现图片缓存的类，此类的缓存分为两种：磁盘缓存、保留在内存。通俗的说就是前者保存在沙盒，后者停留在内存中。问题在于，沙盒读写比较耗时，保存在内存中比较占内存，可能存在因内存过大而崩溃。对于沙盒读写耗时，如果文件不大，手机读写速度快，那也是毫厘之间的时间就能完成的。内存占有率大，这个苹果的NSCache就给我们提供了相应的方法，可以在一定程度上降低内存占有率和防止应用崩溃，关于NSCache可以看另外一篇文章&lt;a href=&quot;http://blog.ysenin.com/2016/07/17/NSCache%E7%9B%B8%E5%85%B3%E8%A7%A3%E8%AF%BB/&quot;&gt;NSCache相关解读&lt;/a&gt;。&lt;/p&gt;
     
     </summary>
     
@@ -250,9 +253,10 @@
     <link href="http://yoursite.com/2016/07/17/NSCache%E7%9B%B8%E5%85%B3%E8%A7%A3%E8%AF%BB/"/>
     <id>http://yoursite.com/2016/07/17/NSCache相关解读/</id>
     <published>2016-07-16T17:47:52.000Z</published>
-    <updated>2016-07-18T16:52:14.000Z</updated>
+    <updated>2017-10-20T03:11:40.727Z</updated>
     
     <content type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;NSCache介绍与基本使用&quot;&gt;&lt;a href=&quot;#NSCache介绍与基本使用&quot; class=&quot;headerlink&quot; title=&quot;NSCache介绍与基本使用&quot;&gt;&lt;/a&gt;NSCache介绍与基本使用&lt;/h3&gt;&lt;p&gt;这是一个非常简单的缓存管理类，以key-value对的形式进行存储。是不是感觉和NSMutableDictionary非常相似呢？没错，在iOS 4之前，苹果就是以NSMutableDictionary的形势做缓存的，至于两者的区别会在接下来的文章里提到。在项目中，新建一个NSCache对象，点击进入NSCache类中，我们就可以看到NSCache给我们提供的几个简单的属性和方法。&lt;/p&gt;
 &lt;h4 id=&quot;属性&quot;&gt;&lt;a href=&quot;#属性&quot; class=&quot;headerlink&quot; title=&quot;属性&quot;&gt;&lt;/a&gt;属性&lt;/h4&gt;&lt;blockquote&gt;
 &lt;p&gt;@property (copy) NSString *name; // 名称&lt;br&gt;@property (nullable, assign) id&lt;nscachedelegate&gt; delegate; // 代理&lt;br&gt;@property NSUInteger totalCostLimit;    // 最大缓存容量上限&lt;br&gt;@property NSUInteger countLimit;    // 最大缓存容量对象个数&lt;br&gt;@property BOOL evictsObjectsWithDiscardedContent; // 是否允许退出对象丢弃缓存内容&lt;/nscachedelegate&gt;&lt;/p&gt;
@@ -281,7 +285,7 @@
     
     <summary type="html">
     
-      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源
+      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。&lt;/p&gt;
     
     </summary>
     
@@ -299,9 +303,10 @@
     <link href="http://yoursite.com/2016/07/17/SDWebImage-%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/"/>
     <id>http://yoursite.com/2016/07/17/SDWebImage-源码剖析/</id>
     <published>2016-07-16T16:59:11.000Z</published>
-    <updated>2016-07-18T16:43:48.000Z</updated>
+    <updated>2017-10-20T03:33:59.923Z</updated>
     
     <content type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;吐槽一下，前段时间准备面试，然后在拉勾透了各种公司，估摸着又一个月吧，得到一个面试机会。还没把握住，跪在了第四面。不知道怎么言表自己这份心情，大概有如下几个原因吧：&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;blockquote&gt;
 &lt;p&gt;1.个人能力问题，这也算是最大的问题，虽然基础还过得去，但是项目经验少，知识面比较窄；&lt;br&gt;2.单纯的移动互联网威风不再，iOS市场过剩，现在都是择优录取，经验都是3－5年，我这一年的有点尴尬；&lt;br&gt;3.投递的公司，大多数是比较大型的公司，因此从项目经验和学校就给筛选掉了；&lt;br&gt;4.招聘高峰期过了，公司现在不怎么缺新人；&lt;br&gt;5.拉勾的机制问题，不知道是不是啊。上一家面试公司，那天上午给我发了面试邀请，结果下午拉勾就给我发了一条不匹配的邮件。&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -312,7 +317,7 @@
     
     <summary type="html">
     
-      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;吐槽一下，前段时间准备面试，然后在拉勾透了各种公司，估摸着又一个月吧，得到一个面试机会。还没把握住，跪在了第四面。不知道怎么言表自己这份心情
+      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;吐槽一下，前段时间准备面试，然后在拉勾透了各种公司，估摸着又一个月吧，得到一个面试机会。还没把握住，跪在了第四面。不知道怎么言表自己这份心情，大概有如下几个原因吧：&lt;/p&gt;
     
     </summary>
     
@@ -330,9 +335,10 @@
     <link href="http://yoursite.com/2016/07/05/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%A2%E8%AF%95%E7%BB%8F%E5%8E%86/"/>
     <id>http://yoursite.com/2016/07/05/记一次面试经历/</id>
     <published>2016-07-05T05:55:50.000Z</published>
-    <updated>2016-07-05T08:02:05.000Z</updated>
+    <updated>2017-10-20T03:02:13.364Z</updated>
     
     <content type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;距离毕业刚好一年，那么这一年呢！换了两个公司，第一个由于内部股权争端，还没有到两个月就已经夭折（很恶心）；然后来到了第二个公司，也就是现在这个公司。在这个公司呢，待着是没啥问题，正常的编码工作，不算忙。好一点的就是能接触swift开发，算是这一年来最开心的事。问题在于，没人带，平时的相互探讨又少，工资稍低。还有个重要的原因就是：眼更瞎、腰痛、鼠标手、啤酒肚，在这一年内都一一发生了（看来应该买本《程序员健康指南》）,这些谋生了我想离开本公司的想法。所以，在上个月就开始准备去面试。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;p&gt;在拉勾投了半个月，然后收到了一份面试邀请。第一个星期的简历写的太简单，当然第二份也差不多。在面试完才发现，其实在这一年做过的项目是没有什么技术深度的。所以，导致投了很多简历都没人给机会。所以，非常感谢给机会面试的这家公司&lt;a href=&quot;https://www.futu5.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;富途&lt;/a&gt;，公司大多数都是腾讯出来的员工，也拿到了腾讯的投资，非常不错的一家公司。&lt;/p&gt;
 &lt;h3 id=&quot;面试过程&quot;&gt;&lt;a href=&quot;#面试过程&quot; class=&quot;headerlink&quot; title=&quot;面试过程&quot;&gt;&lt;/a&gt;面试过程&lt;/h3&gt;&lt;p&gt;面试时间是7.4号，由于之前预约的是15点面试，所以早上我从珠海赶车去深圳。到了深圳吃完饭，差不多14:20，也没事做就早点到了公司。进门的感受挺不错，和前台沟通了一下。然后，就等着面试官开始面试。&lt;/p&gt;
 &lt;h4 id=&quot;一面&quot;&gt;&lt;a href=&quot;#一面&quot; class=&quot;headerlink&quot; title=&quot;一面&quot;&gt;&lt;/a&gt;一面&lt;/h4&gt;&lt;p&gt;基本上的面试流程都是先自我介绍，介绍完之后，就开始针对简历中的项目开始提问。首先，根据我的项目开始问项目遇到的技术难点、是否有看过第三方框架的源码、GCD等。待我回答完之后，可以从他的表情和言语中看出，表现的不是特别好（很差）。然后，在看到我的简历写了关于我在学校学过一些算法，就拿了一份试题给我做。试题内容是关于：指针、字节对齐、数据库等问题；还有4道手写代码題（具体的不能透露，因为公司花了很多时间在这个上面），建议面试可以看&lt;a href=&quot;http://blog.csdn.net/v_JULY_v&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;算法之道 结构之法&lt;/a&gt;的博客，也可以访问&lt;a href=&quot;https://www.julyedu.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;7月在线&lt;/a&gt;，博主现在开始创业，所以可以支持下。庆幸的是，自己还没忘记当时学过的知识，大部分都是自己遇到的，也很快得出了结果。当然，也有一些小问题错了，在面试官的指引下逐步完成了最后的代码。&lt;/p&gt;
@@ -356,7 +362,7 @@
     
     <summary type="html">
     
-      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;距离毕业刚好一年，那么这一年呢！换了两个公司，第一个由于内部股权争端，还没有到两个月就已经夭折（很恶心）；然后来到了第二个公司，也就是现在这
+      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;距离毕业刚好一年，那么这一年呢！换了两个公司，第一个由于内部股权争端，还没有到两个月就已经夭折（很恶心）；然后来到了第二个公司，也就是现在这个公司。在这个公司呢，待着是没啥问题，正常的编码工作，不算忙。好一点的就是能接触swift开发，算是这一年来最开心的事。问题在于，没人带，平时的相互探讨又少，工资稍低。还有个重要的原因就是：眼更瞎、腰痛、鼠标手、啤酒肚，在这一年内都一一发生了（看来应该买本《程序员健康指南》）,这些谋生了我想离开本公司的想法。所以，在上个月就开始准备去面试。&lt;/p&gt;
     
     </summary>
     
@@ -447,9 +453,10 @@
     <link href="http://yoursite.com/2016/06/29/%E5%85%B3%E4%BA%8E%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%80%9D%E8%80%83/"/>
     <id>http://yoursite.com/2016/06/29/关于单例模式的思考/</id>
     <published>2016-06-29T12:56:36.000Z</published>
-    <updated>2016-06-29T17:37:57.000Z</updated>
+    <updated>2017-10-20T03:01:57.836Z</updated>
     
     <content type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;一直以来呢，对于设计模式感觉就是非常神奇的一个东西。从网上开始搜索一些关于设计模式的教程来学习，不过说真的，仅仅是自己通过网络的资料来学习是非常蛋疼的一件事。因为，没有人指导，感觉就是知其然，不知其所以然，就例如接下来要写的单例模式的猜想。那么，今天要解决什么问题呢？有如下三点：&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;blockquote&gt;
 &lt;p&gt;1.由于单例模式在内存中的生命周期是当第一次使用的时候开始创建，直到application应用销毁时，才从内存中移除。那么问题在于，单例对象在内存中创建之后，所占的内存大小是多少呢？&lt;br&gt;2.在单例方法中，使用多线程，对单例中属性的影响？&lt;br&gt;3.在那些条件下使用单例、实例及类方法？&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -478,7 +485,7 @@
     
     <summary type="html">
     
-      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;一直以来呢，对于设计模式感觉就是非常神奇的一个东西。从网上开始搜索一些关于设计模式的教程来学习，不过说真的，仅仅是自己通过网络的资料来学习是
+      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;一直以来呢，对于设计模式感觉就是非常神奇的一个东西。从网上开始搜索一些关于设计模式的教程来学习，不过说真的，仅仅是自己通过网络的资料来学习是非常蛋疼的一件事。因为，没有人指导，感觉就是知其然，不知其所以然，就例如接下来要写的单例模式的猜想。那么，今天要解决什么问题呢？有如下三点：&lt;/p&gt;
     
     </summary>
     
@@ -498,11 +505,12 @@
     <link href="http://yoursite.com/2016/06/29/%E7%AE%80%E5%8E%86-%E6%9D%A8%E6%A3%AE-iOS%E5%BC%80%E5%8F%91%E5%B7%A5%E7%A8%8B%E5%B8%88/"/>
     <id>http://yoursite.com/2016/06/29/简历-杨森-iOS开发工程师/</id>
     <published>2016-06-29T05:25:18.000Z</published>
-    <updated>2016-06-29T07:03:18.000Z</updated>
+    <updated>2017-10-20T03:03:07.434Z</updated>
     
     <content type="html">&lt;h3 id=&quot;基本资料&quot;&gt;&lt;a href=&quot;#基本资料&quot; class=&quot;headerlink&quot; title=&quot;基本资料&quot;&gt;&lt;/a&gt;基本资料&lt;/h3&gt;&lt;blockquote&gt;
-&lt;p&gt; 姓   名：杨森&lt;br&gt; 联系电话：13726213088&lt;br&gt; 邮   箱：735003861@qq.com, seninchina@gmail.com&lt;br&gt; 博   客：blog.ysenin.com&lt;br&gt; 应聘职位：iOS开发工程师&lt;br&gt; 工作经验：1年工作、半年实习&lt;/p&gt;
+&lt;p&gt; 姓   名：杨森&lt;br&gt; 联系电话：13726213088&lt;br&gt; 邮   箱：735003861@qq.com, seninchina@gmail.com&lt;br&gt; 博   客：blog.ysenin.com&lt;br&gt; 应聘职位：iOS开发工程师&lt;br&gt; 工作经验：3年工作&lt;/p&gt;
 &lt;/blockquote&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;教育背景&quot;&gt;&lt;a href=&quot;#教育背景&quot; class=&quot;headerlink&quot; title=&quot;教育背景&quot;&gt;&lt;/a&gt;教育背景&lt;/h3&gt;&lt;blockquote&gt;
 &lt;p&gt; 毕业院校：北京理工大学珠海学院&lt;br&gt; 专   业：软件工程&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -513,7 +521,7 @@
 &lt;p&gt; 熟练掌握Swift开发语言&lt;br&gt; 熟练代码实现UI编写&lt;br&gt; 熟练掌握MVC架构&lt;br&gt; 基本掌握Autolayout、Masony、Xib布局&lt;br&gt; 基本掌握Objective-C开发语言&lt;br&gt; 基本掌握AVFoundation、UIKit、Foundation等系统框架&lt;br&gt; 基本掌握AFNetworking、FMDB、MBProgressHUD等第三方框架&lt;br&gt; 了解内存管理、block、GCD等多线程技术的使用&lt;br&gt; 初步了解Objective-C的runtime机制、MVVM架构、ReactiveCocoa响应式编程&lt;br&gt; 使用sqlite做数据持久化、Swift与Objective-C混编、Swift语言更新的经历等&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h3 id=&quot;项目经验&quot;&gt;&lt;a href=&quot;#项目经验&quot; class=&quot;headerlink&quot; title=&quot;项目经验&quot;&gt;&lt;/a&gt;项目经验&lt;/h3&gt;&lt;blockquote&gt;
-&lt;p&gt; &lt;strong&gt;珠海轼域网络科技  Mieah邮件客户端 iOS端 Swift2.2（2015.10 - 至今）&lt;/strong&gt;&lt;br&gt; 简述：&lt;br&gt;      获取Gmail API，获取邮件数据并解析，通过联系人，实现群组功能。用户可以使用客户端发送个人邮件、多人邮件以及群组邮件等功能。&lt;/p&gt;
+&lt;p&gt; &lt;strong&gt;珠海轼域网络科技  Mieah邮件客户端 iOS端 Swift2.2（2015.10 - 2016.7）&lt;/strong&gt;&lt;br&gt; 简述：&lt;br&gt;      获取Gmail API，获取邮件数据并解析，通过联系人，实现群组功能。用户可以使用客户端发送个人邮件、多人邮件以及群组邮件等功能。&lt;/p&gt;
 &lt;p&gt; 工作内容：&lt;br&gt;      1.接入Gmail API，解析邮件数据，获取用户和联系人的数据，发送邮件及附件；&lt;br&gt;      2.Mieah项目的UI以及逻辑实现（对话、广告邮件、联系人、设定）；&lt;br&gt;      3.创建群组、分析多人邮件、添加联系人（输入email、手机联系人）等功能实现；&lt;br&gt;      4.通过AFNetworking框架实现客户端与服务器的数据交互；&lt;br&gt;      5.通过sqlite和NSUserDefault实现数据持久化处理；&lt;br&gt;      6.通过AVFoundation系统框架实现音频录制与播放、视频录制裁剪与播放、二维码扫描与解析；&lt;br&gt;      7.读写沙盒数据以及系统相册数据等；&lt;br&gt;      8.网络请求、内存使用调优。&lt;/p&gt;
 &lt;p&gt; 难点：&lt;br&gt;      邮件内容截取、附件数据下载及展示、群组功能数据与后台的交互等。&lt;/p&gt;
 &lt;p&gt; &lt;strong&gt;珠海轼域网络科技  skillTemp iOS端 Swift2.0（2015.8 - 2015.10）&lt;/strong&gt;&lt;br&gt; 简述：&lt;br&gt;      一款类似于italk的技能交易平台，用户将自己拥有的专业技能（洗剪吹，教育技能等）放到平台供需求用户浏览，也可以寻求自己需要的技能，并与该对象达成沟通交易。目前在香港App Store上架。&lt;/p&gt;
@@ -531,7 +539,8 @@
     <summary type="html">
     
       &lt;h3 id=&quot;基本资料&quot;&gt;&lt;a href=&quot;#基本资料&quot; class=&quot;headerlink&quot; title=&quot;基本资料&quot;&gt;&lt;/a&gt;基本资料&lt;/h3&gt;&lt;blockquote&gt;
-&lt;p&gt; 姓   名：杨森&lt;br&gt; 联系电话：13726213088&lt;br&gt; 邮   箱：73500386
+&lt;p&gt; 姓   名：杨森&lt;br&gt; 联系电话：13726213088&lt;br&gt; 邮   箱：735003861@qq.com, seninchina@gmail.com&lt;br&gt; 博   客：blog.ysenin.com&lt;br&gt; 应聘职位：iOS开发工程师&lt;br&gt; 工作经验：3年工作&lt;/p&gt;
+&lt;/blockquote&gt;
     
     </summary>
     
@@ -648,9 +657,10 @@
     <link href="http://yoursite.com/2016/06/22/iOS%E5%88%A9%E7%94%A8Runtime%E6%9C%BA%E5%88%B6%E6%B7%BB%E5%8A%A0%E9%A2%9D%E5%A4%96%E7%9A%84%E5%B1%9E%E6%80%A7/"/>
     <id>http://yoursite.com/2016/06/22/iOS利用Runtime机制添加额外的属性/</id>
     <published>2016-06-22T13:40:51.000Z</published>
-    <updated>2016-06-22T16:45:31.000Z</updated>
+    <updated>2017-10-20T03:11:08.212Z</updated>
     
     <content type="html">&lt;p&gt;在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;p&gt;对于此类问题的解决方案呢，是利用Runtime机制，在分类里给某个类增加额外的属性。按理说，分类是允许添加属性的，但不会自动生成getter和setter方法的。可为啥我们还是可以在分类增加属性，并能生成getter和setter方法呢？那么这就说到我们的黑魔法–Runtime的关联引用。&lt;/p&gt;
 &lt;p&gt;给个场景吧，曾今在项目中遇到过的问题。在UITableViewCell的contentView中添加一个自定义button，button用于头像显示，点击头像显示大图。解决方案有很多种，例如设置button的tag为cell indexPath.row、判断点击区域等。现在我想通过button的属性来确定点击button的值，该怎么做呢？&lt;/p&gt;
 &lt;p&gt;前面我们说到，可以在分类(Category)添加属性，并通过关联引用来设置属性getter和setter方法。现在我们给button增加一个iamgeName属性，用于显示图片的名称。&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;@property (nonatomic, copy) NSString *imageName;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
@@ -663,7 +673,6 @@
     <summary type="html">
     
       &lt;p&gt;在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。&lt;/p&gt;
-&lt;p&gt;对于此类问题的解决方案呢，是利用R
     
     </summary>
     
@@ -683,9 +692,10 @@
     <link href="http://yoursite.com/2016/06/21/iOS-10%E6%9D%83%E9%99%90%E4%BD%BF%E7%94%A8/"/>
     <id>http://yoursite.com/2016/06/21/iOS-10权限使用/</id>
     <published>2016-06-21T03:49:28.000Z</published>
-    <updated>2016-06-21T04:57:58.000Z</updated>
+    <updated>2017-10-20T03:03:45.613Z</updated>
     
     <content type="html">&lt;p&gt;前几天升级iOS 10，想体验一下，bug实在是太多了，改天写篇文章说一下遇到的相关问题好了。现在iOS 10是开发者的预览版，还没有公开测试版，也就是说通过开发者可以获得一个profile链接，然后下载就可以了。至于Xcode8.0嘛，那就直接在&lt;a href=&quot;https://developer.apple.com/download/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果开发者网站&lt;/a&gt;下载就没问题了，网速慢的话，度娘也可以。那么先说今天遇到的问题吧，在今天准备真机测试的时候发现崩溃了，就这么崩溃了。泪崩，以前都没有遇到过。是什么问题呢？看一下Console的log吧。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;blockquote&gt;
 &lt;p&gt;This app has crashed because it attempted to access privacy-sensitive data without a usage description.  The app’s Info.plist must contain an NSCameraUsageDescription key with a string value explaining to the user how the app uses this data.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -700,7 +710,7 @@
     
     <summary type="html">
     
-      &lt;p&gt;前几天升级iOS 10，想体验一下，bug实在是太多了，改天写篇文章说一下遇到的相关问题好了。现在iOS 10是开发者的预览版，还没有公开测试版，也就是说通过开发者可以获得一个profile链接，然后下载就可以了。至于Xcode8.0嘛，那就直接在&lt;a href=&quot;http
+      &lt;p&gt;前几天升级iOS 10，想体验一下，bug实在是太多了，改天写篇文章说一下遇到的相关问题好了。现在iOS 10是开发者的预览版，还没有公开测试版，也就是说通过开发者可以获得一个profile链接，然后下载就可以了。至于Xcode8.0嘛，那就直接在&lt;a href=&quot;https://developer.apple.com/download/&quot;&gt;苹果开发者网站&lt;/a&gt;下载就没问题了，网速慢的话，度娘也可以。那么先说今天遇到的问题吧，在今天准备真机测试的时候发现崩溃了，就这么崩溃了。泪崩，以前都没有遇到过。是什么问题呢？看一下Console的log吧。&lt;/p&gt;
     
     </summary>
     
@@ -716,11 +726,12 @@
     <link href="http://yoursite.com/2016/05/24/MBProgressHUD%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/"/>
     <id>http://yoursite.com/2016/05/24/MBProgressHUD源码解读/</id>
     <published>2016-05-24T15:10:24.000Z</published>
-    <updated>2016-06-22T14:42:23.000Z</updated>
+    <updated>2017-10-20T03:11:26.879Z</updated>
     
     <content type="html">&lt;p&gt; 源码参见：&lt;a href=&quot;https://github.com/jdg/MBProgressHUD&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://github.com/jdg/MBProgressHUD&lt;/a&gt;&lt;br&gt; 版本：0.9.2&lt;/p&gt;
 &lt;h3 id=&quot;描述&quot;&gt;&lt;a href=&quot;#描述&quot; class=&quot;headerlink&quot; title=&quot;描述&quot;&gt;&lt;/a&gt;描述&lt;/h3&gt;&lt;p&gt;MBProgressHUD是一个HUD窗口的第三方库，用在执行一些后台任务时的，在程序显示一些进度和提示的窗口，其大部分时间都是用于一些网络交互时的进度提示等。相对于上个版本，这个版本添加了消失的动画，也修改了布局方式，采用约束来实现布局等。&lt;/p&gt;
 &lt;p&gt;本文主要是从最新的源码讲解它的实现讲解。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;模式&quot;&gt;&lt;a href=&quot;#模式&quot; class=&quot;headerlink&quot; title=&quot;模式&quot;&gt;&lt;/a&gt;模式&lt;/h3&gt;&lt;p&gt;MBProgressHUD中定义了一个MBProgressHUDMode枚举类型，它主要是定义HUD显示的模式。&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;typedef NS_ENUM(NSInteger, MBProgressHUDMode) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     /// 使用UIActivityIndicatorView显示进度，默认值&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     MBProgressHUDModeIndeterminate,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     /// 以前时饼状图，现在内外圈，两个圆环，内圈是一个圆环进度&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     MBProgressHUDModeDeterminate,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     /// 这个直观的来讲就是一个进度条&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     MBProgressHUDModeDeterminateHorizontalBar,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     /// 这是一个一个圆环进度条，和MBProgressHUDModeDeterminate相差不多。细节上的吧。&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     MBProgressHUDModeAnnularDeterminate,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     /// 自定义控件view&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     MBProgressHUDModeCustomView,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     /// 只显示文字&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     MBProgressHUDModeText&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;通过设置mode，来显示不同的模式。当然，我们还可以设置title和detailTitle。这些都会在我们的设置中显示，在MBProgressHUD的Demo中可以看到这些不同mode的应用。&lt;/p&gt;
 &lt;h3 id=&quot;动画&quot;&gt;&lt;a href=&quot;#动画&quot; class=&quot;headerlink&quot; title=&quot;动画&quot;&gt;&lt;/a&gt;动画&lt;/h3&gt;&lt;p&gt;在最新的version中（以前应该也有，没留意以前的代码），MBProgressHUD消失的时候使用了动画，这使得在使用HUD过程中提供了更好的交互体验。只不过动画，只在消失的时候提供了简单的几种类型。事实上显示的时候也是有动画的，由于构造方法没有添加相关值，因此只能使用默认动画显示。如果要修改显示时的动画，有两种方案，1.修改源代码；2.添加构造新的构造方法。相对于第一种，第二种方案的可塑性会更加好，也因此建议自己在源代码中添加自己的构造方法。动画类型如下所示：&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;typedef NS_ENUM(NSInteger, MBProgressHUDAnimation) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    /// 不透明动画&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    MBProgressHUDAnimationFade,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    /// 从原比例到0.5倍比例&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    MBProgressHUDAnimationZoom,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    /// 从原比例到1.5倍比例&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    MBProgressHUDAnimationZoomOut,&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   /// 从原比例到0.5倍比例&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   MBProgressHUDAnimationZoomIn&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
@@ -736,7 +747,9 @@
     
     <summary type="html">
     
-      &lt;p&gt; 源码参见：&lt;a href=&quot;https://github.com/jdg/MBProgressHUD&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://github.com/jdg/MBProgressHUD&lt;/a&gt;&lt;br&gt; 版本：0.9.2
+      &lt;p&gt; 源码参见：&lt;a href=&quot;https://github.com/jdg/MBProgressHUD&quot;&gt;https://github.com/jdg/MBProgressHUD&lt;/a&gt;&lt;br&gt; 版本：0.9.2&lt;/p&gt;
+&lt;h3 id=&quot;描述&quot;&gt;&lt;a href=&quot;#描述&quot; class=&quot;headerlink&quot; title=&quot;描述&quot;&gt;&lt;/a&gt;描述&lt;/h3&gt;&lt;p&gt;MBProgressHUD是一个HUD窗口的第三方库，用在执行一些后台任务时的，在程序显示一些进度和提示的窗口，其大部分时间都是用于一些网络交互时的进度提示等。相对于上个版本，这个版本添加了消失的动画，也修改了布局方式，采用约束来实现布局等。&lt;/p&gt;
+&lt;p&gt;本文主要是从最新的源码讲解它的实现讲解。&lt;/p&gt;
     
     </summary>
     

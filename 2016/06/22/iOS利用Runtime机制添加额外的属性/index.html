@@ -86,19 +86,16 @@
 
 
 
-<meta name="description" content="在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。
-对于此类问题的解决方案呢，是利用Runtime机制，在分类里给某个类增加额外的属性。按理说，分类是允许添加属性的，但不会自动生成getter和setter方法的。可为啥我们还">
+<meta name="description" content="在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iOS在分类(Category)中添加并使用属性">
 <meta property="og:url" content="http://yoursite.com/2016/06/22/iOS利用Runtime机制添加额外的属性/index.html">
 <meta property="og:site_name" content="ySenIn's Blog">
-<meta property="og:description" content="在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。
-对于此类问题的解决方案呢，是利用Runtime机制，在分类里给某个类增加额外的属性。按理说，分类是允许添加属性的，但不会自动生成getter和setter方法的。可为啥我们还">
-<meta property="og:updated_time" content="2016-06-22T16:45:31.000Z">
+<meta property="og:description" content="在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。">
+<meta property="og:updated_time" content="2017-10-20T03:11:08.212Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS在分类(Category)中添加并使用属性">
-<meta name="twitter:description" content="在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。
-对于此类问题的解决方案呢，是利用Runtime机制，在分类里给某个类增加额外的属性。按理说，分类是允许添加属性的，但不会自动生成getter和setter方法的。可为啥我们还">
+<meta name="twitter:description" content="在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。">
 
 
 
@@ -323,6 +320,7 @@
 
       
         <p>在很多时候，我们想给某些类增加一些属性，用于传值或者用做与其他用途。问题在于，调用系统给定的类，使得我们无法去做更改，必须通过代理、通知之类的方式传递。这类似的做法，让我们变得非常被动，写一堆代码， 只是为了传递一个小参数。</p>
+<a id="more"></a>
 <p>对于此类问题的解决方案呢，是利用Runtime机制，在分类里给某个类增加额外的属性。按理说，分类是允许添加属性的，但不会自动生成getter和setter方法的。可为啥我们还是可以在分类增加属性，并能生成getter和setter方法呢？那么这就说到我们的黑魔法–Runtime的关联引用。</p>
 <p>给个场景吧，曾今在项目中遇到过的问题。在UITableViewCell的contentView中添加一个自定义button，button用于头像显示，点击头像显示大图。解决方案有很多种，例如设置button的tag为cell indexPath.row、判断点击区域等。现在我想通过button的属性来确定点击button的值，该怎么做呢？</p>
 <p>前面我们说到，可以在分类(Category)添加属性，并通过关联引用来设置属性getter和setter方法。现在我们给button增加一个iamgeName属性，用于显示图片的名称。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, copy) NSString *imageName;</span><br></pre></td></tr></table></figure></p>
