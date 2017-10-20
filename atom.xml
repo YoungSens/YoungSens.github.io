@@ -726,7 +726,7 @@
     <link href="http://yoursite.com/2016/05/24/MBProgressHUD%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/"/>
     <id>http://yoursite.com/2016/05/24/MBProgressHUD源码解读/</id>
     <published>2016-05-24T15:10:24.000Z</published>
-    <updated>2017-10-20T03:11:26.879Z</updated>
+    <updated>2017-10-20T03:36:10.001Z</updated>
     
     <content type="html">&lt;p&gt; 源码参见：&lt;a href=&quot;https://github.com/jdg/MBProgressHUD&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://github.com/jdg/MBProgressHUD&lt;/a&gt;&lt;br&gt; 版本：0.9.2&lt;/p&gt;
 &lt;h3 id=&quot;描述&quot;&gt;&lt;a href=&quot;#描述&quot; class=&quot;headerlink&quot; title=&quot;描述&quot;&gt;&lt;/a&gt;描述&lt;/h3&gt;&lt;p&gt;MBProgressHUD是一个HUD窗口的第三方库，用在执行一些后台任务时的，在程序显示一些进度和提示的窗口，其大部分时间都是用于一些网络交互时的进度提示等。相对于上个版本，这个版本添加了消失的动画，也修改了布局方式，采用约束来实现布局等。&lt;/p&gt;
