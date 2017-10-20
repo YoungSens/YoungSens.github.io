@@ -1,0 +1,687 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="NSCache,缓存," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="ySenIn's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。
+NSCache介绍与基本使用这是一个非常简单的缓存管理类，以key-value对的形">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NSCache相关解读">
+<meta property="og:url" content="http://yoursite.com/2016/07/17/NSCache相关解读/index.html">
+<meta property="og:site_name" content="ySenIn's Blog">
+<meta property="og:description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。
+NSCache介绍与基本使用这是一个非常简单的缓存管理类，以key-value对的形">
+<meta property="og:updated_time" content="2016-07-18T16:52:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NSCache相关解读">
+<meta name="twitter:description" content="前言说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。
+NSCache介绍与基本使用这是一个非常简单的缓存管理类，以key-value对的形">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> NSCache相关解读 | ySenIn's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">ySenIn's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">ySen</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                NSCache相关解读
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-17T01:47:52+08:00" content="2016-07-17">
+              2016-07-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Foundation/" itemprop="url" rel="index">
+                    <span itemprop="name">Foundation</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/07/17/NSCache相关解读/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/17/NSCache相关解读/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>说实话，最近在看SDWebImage，里面很重要的一部分就是讲缓存这个知识点。那么，写这篇文章的前半个小时，是准备写SDWebImage的源码分析的。但因为强迫症，觉得需要讲清楚缓存相关的概念，才能继续往下讲SDWebImage。因此，这篇文章，主要讲NSCache相关的知识点，以及其他方式构建缓存的优缺点。</p>
+<h3 id="NSCache介绍与基本使用"><a href="#NSCache介绍与基本使用" class="headerlink" title="NSCache介绍与基本使用"></a>NSCache介绍与基本使用</h3><p>这是一个非常简单的缓存管理类，以key-value对的形式进行存储。是不是感觉和NSMutableDictionary非常相似呢？没错，在iOS 4之前，苹果就是以NSMutableDictionary的形势做缓存的，至于两者的区别会在接下来的文章里提到。在项目中，新建一个NSCache对象，点击进入NSCache类中，我们就可以看到NSCache给我们提供的几个简单的属性和方法。</p>
+<h4 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h4><blockquote>
+<p>@property (copy) NSString *name; // 名称<br>@property (nullable, assign) id<nscachedelegate> delegate; // 代理<br>@property NSUInteger totalCostLimit;    // 最大缓存容量上限<br>@property NSUInteger countLimit;    // 最大缓存容量对象个数<br>@property BOOL evictsObjectsWithDiscardedContent; // 是否允许退出对象丢弃缓存内容</nscachedelegate></p>
+</blockquote>
+<p>这里需要重点讲的只有totalCostLimit和countLimit两个属性，如注释所看到的，一个是最大缓存容量上限和最大缓存对象个数。</p>
+<blockquote>
+<p>  1.totalCostLimit：默认为0，表示没有最大的缓存上限；当不为0时，我们在添加的缓存数据超过totalCostLimit，NSCache会自动帮我们移除一个或多个缓存对象，以保证我们添加缓存数据之后的大小不会超过最大的缓存容量。<br>  2.countLimit: 默认为0，表示没有最大的缓存上限个数；当不为0时，我们逐个添加缓存时，会计算是否超过最大的缓存数量个数，若超过则会自动释放其中一个。</p>
+</blockquote>
+<p>当然，上面两个属性并不是一个严格的限制。当缓存数据超过限制时，可能会立即丢弃、稍后或者永不丢弃，具体的得看具体的实现细节。</p>
+<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><p>NSCache提供了一组方法来存取key－value对，通过下面的方法就可以设置缓存数据。<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (nullable <span class="type">ObjectType</span>)objectForKey:(<span class="type">KeyType</span>)key; <span class="comment">// 获取key的缓存数据</span></span><br><span class="line">- (void)setObject:(<span class="type">ObjectType</span>)obj forKey:(<span class="type">KeyType</span>)key; <span class="comment">// 0 cost, 设置key的缓存数据，默认缓存花费为0</span></span><br><span class="line">- (void)setObject:(<span class="type">ObjectType</span>)obj forKey:(<span class="type">KeyType</span>)key cost:(<span class="type">NSUInteger</span>)g; <span class="comment">// 同上，缓存花费为g</span></span><br><span class="line">- (void)removeObjectForKey:(<span class="type">KeyType</span>)key; <span class="comment">// 移除key的缓存数据</span></span><br><span class="line">- (void)removeAllObjects; <span class="comment">// 移除所有缓存数据</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// delegate</span></span><br><span class="line">- (void)cache:(<span class="type">NSCache</span> *)cache willEvictObject:(id)obj; <span class="comment">// 被移除的缓存数据对象</span></span><br></pre></td></tr></table></figure></p>
+<p>特别需要说明的两个方法如下：<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (void)setObject:(<span class="type">ObjectType</span>)obj forKey:(<span class="type">KeyType</span>)key; <span class="comment">// 方法一</span></span><br><span class="line">- (void)setObject:(<span class="type">ObjectType</span>)obj forKey:(<span class="type">KeyType</span>)key cost:(<span class="type">NSUInteger</span>)g; <span class="comment">// 方法二</span></span><br></pre></td></tr></table></figure></p>
+<p>本质上，两个方法的实现是一样的，方法一的cost默认为0。那么cost时用来干什么的呢？参考<a href="http://southpeak.github.io/blog/2015/02/11/cocoa-foundation-nscache/" target="_blank" rel="external">南峰子的技术博客</a>有如下这段话：</p>
+<blockquote>
+<p>这个消耗值用于计算缓存中所有对象的一个消耗总和。当内存受限或者总消耗超过了限定的最大总消耗，则缓存应该开启一个丢弃过程以移除一些对象。不过，这个过程不能保证被丢弃对象的顺序。其结果是，如果我们试图操作这个消耗值来实现一些特殊的行为，则后果可能会损害我们的程序。通常情况下，这个消耗值是对象的字节大小。如果这些信息不是现成的，则我们不应该去计算它，因为这样会使增加使用缓存的成本。如果我们没有可用的值传递，则直接传递0，或者是使用-setObject:forKey:方法，这个方法不需要传入一个消耗值.</p>
+</blockquote>
+<p>至于其它方法嘛，都很容易理解，代理方法是NSCache在计算超过最大消耗值时，所移除的对象。</p>
+<h3 id="NSCache代码实现"><a href="#NSCache代码实现" class="headerlink" title="NSCache代码实现"></a>NSCache代码实现</h3><p>事实上，NSCache在以前是不知道内部实现。但现在不一样了，由于Swift现在开源，我们可以通过Swift去探查NSCache的具体实现。<a href="https://github.com/apple/swift-corelibs-foundation/blob/master/Foundation/NSCache.swift" target="_blank" rel="external">NSCache源码</a>，从源码可以看出。NSCache的底层实现，是一个双向链表。但是感觉源码存在一个bug，不知道具体是怎样子的。撇开这些bug，我们看一下关于最大的缓存内存容量和最大的缓存个数。<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">insert</span><span class="params">(<span class="number">_</span> entry: NSCacheEntry)</span></span> &#123; <span class="comment">// 添加缓存数据</span></span><br><span class="line">    <span class="keyword">if</span> _byCost == <span class="literal">nil</span> &#123;</span><br><span class="line">        _byCost = entry</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> element = _byCost</span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">let</span> e = element &#123; <span class="comment">// 计算需要存放在链表的位置</span></span><br><span class="line">            <span class="keyword">if</span> e.cost &gt; entry.cost &#123;</span><br><span class="line">                <span class="keyword">let</span> newPrev = e.prevByCost</span><br><span class="line">                entry.prevByCost = newPrev</span><br><span class="line">                entry.nextByCost = e <span class="comment">// bug，应该添加e.prevByCost = entry</span></span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            &#125;</span><br><span class="line">            element = e.nextByCost</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">setObject</span><span class="params">(<span class="number">_</span> obj: AnyObject, forKey key: AnyObject, cost g: Int)</span></span> &#123;</span><br><span class="line">    <span class="keyword">let</span> keyRef = <span class="built_in">unsafeBitCast</span>(key, to: <span class="type">UnsafePointer</span>&lt;<span class="type">Void</span>&gt;.<span class="keyword">self</span>) <span class="comment">// 获取key的指针</span></span><br><span class="line">    </span><br><span class="line">    _lock.lock()</span><br><span class="line">    _totalCost += g <span class="comment">// 计算当前所缓存的统计</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> purgeAmount = <span class="number">0</span></span><br><span class="line">    <span class="keyword">if</span> totalCostLimit &gt; <span class="number">0</span> &#123;</span><br><span class="line">        purgeAmount = (_totalCost + g) - totalCostLimit <span class="comment">// 需要移除的内存大小</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> purgeCount = <span class="number">0</span></span><br><span class="line">    <span class="keyword">if</span> countLimit &gt; <span class="number">0</span> &#123;</span><br><span class="line">        purgeCount = (_entries.<span class="built_in">count</span> + <span class="number">1</span>) - countLimit <span class="comment">// 需要移除的对象个数</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> entry = _entries[keyRef] &#123;</span><br><span class="line">        entry.value = obj <span class="comment">// 如果key已经存在，则会替换掉</span></span><br><span class="line">        <span class="keyword">if</span> entry.cost != g &#123; <span class="comment">// 更新cost</span></span><br><span class="line">            entry.cost = g</span><br><span class="line">            remove(entry)</span><br><span class="line">            insert(entry)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        _entries[keyRef] = <span class="type">NSCacheEntry</span>(key: key, value: obj, cost: g)</span><br><span class="line">    &#125;</span><br><span class="line">    _lock.unlock() <span class="comment">// 解锁</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> toRemove = [<span class="type">NSCacheEntry</span>]() <span class="comment">// 需要移除的对象实例</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> purgeAmount &gt; <span class="number">0</span> &#123; <span class="comment">// 需要丢弃缓存的数量</span></span><br><span class="line">        _lock.lock()</span><br><span class="line">        <span class="keyword">while</span> _totalCost - totalCostLimit &gt; <span class="number">0</span> &#123; <span class="comment">// 由于链表有序，所以从第一个开始抛弃，直到总缓存大小小于设定的缓存大小</span></span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> entry = _byCost &#123;</span><br><span class="line">                _totalCost -= entry.cost</span><br><span class="line">                toRemove.append(entry)</span><br><span class="line">                remove(entry)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> countLimit &gt; <span class="number">0</span> &#123;</span><br><span class="line">            purgeCount = (_entries.<span class="built_in">count</span> - toRemove.<span class="built_in">count</span>) - countLimit <span class="comment">// 更新当前缓存的对象个数</span></span><br><span class="line">        &#125;</span><br><span class="line">        _lock.unlock()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> purgeCount &gt; <span class="number">0</span> &#123;</span><br><span class="line">        _lock.lock()</span><br><span class="line">        <span class="keyword">while</span> (_entries.<span class="built_in">count</span> - toRemove.<span class="built_in">count</span>) - countLimit &gt; <span class="number">0</span> &#123; <span class="comment">// 当未超过最大缓存大小，但超过最大的缓存个数，做移除操作</span></span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> entry = _byCost &#123;</span><br><span class="line">                _totalCost -= entry.cost</span><br><span class="line">                toRemove.append(entry)</span><br><span class="line">                remove(entry)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        _lock.unlock()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> del = delegate &#123; <span class="comment">// 代理方法，释放的对象</span></span><br><span class="line">        <span class="keyword">for</span> entry <span class="keyword">in</span> toRemove &#123;</span><br><span class="line">            del.cache(<span class="keyword">self</span>, willEvictObject: entry.value)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    _lock.lock()</span><br><span class="line">    <span class="keyword">for</span> entry <span class="keyword">in</span> toRemove &#123;</span><br><span class="line">        _entries.removeValue(forKey: <span class="built_in">unsafeBitCast</span>(entry.key, to: <span class="type">UnsafePointer</span>&lt;<span class="type">Void</span>&gt;.<span class="keyword">self</span>)) <span class="comment">// the cost list is already fixed up in the purge routines, 移除释放的对象</span></span><br><span class="line">    &#125;</span><br><span class="line">    _lock.unlock()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过上面的代码，可以看到NSCache是按照对象容量进行排序的。在超过最大缓存设定时，是从容量从小到大的移除，这也就解决了之前不知道具体实现的而不知道移除的对象。当然，现在虽然知道移除的是谁，但是需要计算出来还是需要一定时耗的。</p>
+<h3 id="NSCache和可变集合的区别"><a href="#NSCache和可变集合的区别" class="headerlink" title="NSCache和可变集合的区别"></a>NSCache和可变集合的区别</h3><p>接下来这段是摘抄自<a href="http://southpeak.github.io/blog/2015/02/11/cocoa-foundation-nscache/" target="_blank" rel="external">南峰子的技术博客</a>，总结的东西在很多关于NSCache的文章都可以看到。当然，还介绍各位可以看一下[Effective Objective-C 2.0 编写高质量的iOS和OS X代码的52个有效方法]</p>
+<blockquote>
+<p>1.NSCache类结合了各种自动删除策略，以确保不会占用过多的系统内存。如果其它应用需要内存时，系统自动执行这些策略。当调用这些策略时，会从缓存中删除一些对象，以最大限度减少内存的占用<br>2.NSCache是线程安全的，我们可以在不同的线程中添加、删除和查询缓存中的对象，而不需要锁定缓存区域<br>3.不像NSMutableDictionary对象，一个缓存对象不会拷贝key对象</p>
+</blockquote>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>NSCache是一个很简单的缓存框架，方法简单，源代码也比较简单。通过Swift中关于NSCache的源码，可以更好的理解缓存策略。也很建议各位在学习知识点的时候，深入去学习，这样对于缓存的理解就不仅仅局限在在于调用代码的基础上。</p>
+<p>参考文献：<br>1.<a href="http://southpeak.github.io/blog/2015/02/11/cocoa-foundation-nscache/" target="_blank" rel="external">南峰子的技术博客</a><br>2.<a href="https://github.com/nixzhu/dev-blog/blob/master/2015-12-09-nscache.md" target="_blank" rel="external">nixzhu/dev-blog</a><br>3.<a href="http://www.jianshu.com/p/2fad7265317e" target="_blank" rel="external">feiyangkl的简书</a><br>4.<a href="http://nshipster.cn/nscache/" target="_blank" rel="external">NSCache</a><br>4.[Effective Objective-C 2.0 编写高质量的iOS和OS X代码的52个有效方法] Matt Galloway著 爱飞翔 译</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/NSCache/" rel="tag">#NSCache</a>
+          
+            <a href="/tags/缓存/" rel="tag">#缓存</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/17/SDWebImage-源码剖析/" rel="next" title="SDWebImage 源码剖析">
+                <i class="fa fa-chevron-left"></i> SDWebImage 源码剖析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/19/SDWebImage源码之SDImageCache/" rel="prev" title="SDWebImage源码之SDImageCache">
+                SDWebImage源码之SDImageCache <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2016/07/17/NSCache相关解读/"
+     data-title="NSCache相关解读"
+     data-content=""
+     data-url="http://yoursite.com/2016/07/17/NSCache相关解读/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/07/17/NSCache相关解读/"
+           data-title="NSCache相关解读" data-url="http://yoursite.com/2016/07/17/NSCache相关解读/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="ySenIn" />
+          <p class="site-author-name" itemprop="name">ySenIn</p>
+          <p class="site-description motion-element" itemprop="description">一个孤独的人，一个不想孤独的人</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">14</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSCache介绍与基本使用"><span class="nav-number">2.</span> <span class="nav-text">NSCache介绍与基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#属性"><span class="nav-number">2.1.</span> <span class="nav-text">属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法"><span class="nav-number">2.2.</span> <span class="nav-text">方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSCache代码实现"><span class="nav-number">3.</span> <span class="nav-text">NSCache代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSCache和可变集合的区别"><span class="nav-number">4.</span> <span class="nav-text">NSCache和可变集合的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后记"><span class="nav-number">5.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <span id="busuanzi_container_site_pv">pv: <span id="busuanzi_value_site_pv"></span></span>
+  <span id="busuanzi_container_site_uv">uv: <span id="busuanzi_value_site_uv"></span></span>
+  <span class="author" itemprop="copyrightHolder">ySenIn</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ysenin"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>

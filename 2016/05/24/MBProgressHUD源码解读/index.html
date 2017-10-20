@@ -1,0 +1,676 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="源码剖析," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="ySenIn's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="源码参见：https://github.com/jdg/MBProgressHUD 版本：0.9.2
+描述MBProgressHUD是一个HUD窗口的第三方库，用在执行一些后台任务时的，在程序显示一些进度和提示的窗口，其大部分时间都是用于一些网络交互时的进度提示等。相对于上个版本，这个版本添加了消失的动画，也修改了布局方式，采用约束来实现布局等。
+本文主要是从最新的源码讲解它的实现讲解。
+模式M">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MBProgressHUD源码解读">
+<meta property="og:url" content="http://yoursite.com/2016/05/24/MBProgressHUD源码解读/index.html">
+<meta property="og:site_name" content="ySenIn's Blog">
+<meta property="og:description" content="源码参见：https://github.com/jdg/MBProgressHUD 版本：0.9.2
+描述MBProgressHUD是一个HUD窗口的第三方库，用在执行一些后台任务时的，在程序显示一些进度和提示的窗口，其大部分时间都是用于一些网络交互时的进度提示等。相对于上个版本，这个版本添加了消失的动画，也修改了布局方式，采用约束来实现布局等。
+本文主要是从最新的源码讲解它的实现讲解。
+模式M">
+<meta property="og:updated_time" content="2016-06-22T14:42:23.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MBProgressHUD源码解读">
+<meta name="twitter:description" content="源码参见：https://github.com/jdg/MBProgressHUD 版本：0.9.2
+描述MBProgressHUD是一个HUD窗口的第三方库，用在执行一些后台任务时的，在程序显示一些进度和提示的窗口，其大部分时间都是用于一些网络交互时的进度提示等。相对于上个版本，这个版本添加了消失的动画，也修改了布局方式，采用约束来实现布局等。
+本文主要是从最新的源码讲解它的实现讲解。
+模式M">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> MBProgressHUD源码解读 | ySenIn's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">ySenIn's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">ySen</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                MBProgressHUD源码解读
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-24T23:10:24+08:00" content="2016-05-24">
+              2016-05-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码剖析/" itemprop="url" rel="index">
+                    <span itemprop="name">源码剖析</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/05/24/MBProgressHUD源码解读/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/24/MBProgressHUD源码解读/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p> 源码参见：<a href="https://github.com/jdg/MBProgressHUD" target="_blank" rel="external">https://github.com/jdg/MBProgressHUD</a><br> 版本：0.9.2</p>
+<h3 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h3><p>MBProgressHUD是一个HUD窗口的第三方库，用在执行一些后台任务时的，在程序显示一些进度和提示的窗口，其大部分时间都是用于一些网络交互时的进度提示等。相对于上个版本，这个版本添加了消失的动画，也修改了布局方式，采用约束来实现布局等。</p>
+<p>本文主要是从最新的源码讲解它的实现讲解。</p>
+<h3 id="模式"><a href="#模式" class="headerlink" title="模式"></a>模式</h3><p>MBProgressHUD中定义了一个MBProgressHUDMode枚举类型，它主要是定义HUD显示的模式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">typedef NS_ENUM(NSInteger, MBProgressHUDMode) &#123;</span><br><span class="line"></span><br><span class="line">     /// 使用UIActivityIndicatorView显示进度，默认值</span><br><span class="line">     MBProgressHUDModeIndeterminate,</span><br><span class="line"></span><br><span class="line">     /// 以前时饼状图，现在内外圈，两个圆环，内圈是一个圆环进度</span><br><span class="line">     MBProgressHUDModeDeterminate,</span><br><span class="line"></span><br><span class="line">     /// 这个直观的来讲就是一个进度条</span><br><span class="line">     MBProgressHUDModeDeterminateHorizontalBar,</span><br><span class="line"></span><br><span class="line">     /// 这是一个一个圆环进度条，和MBProgressHUDModeDeterminate相差不多。细节上的吧。</span><br><span class="line">     MBProgressHUDModeAnnularDeterminate,</span><br><span class="line"></span><br><span class="line">     /// 自定义控件view</span><br><span class="line">     MBProgressHUDModeCustomView,</span><br><span class="line"></span><br><span class="line">     /// 只显示文字</span><br><span class="line">     MBProgressHUDModeText</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>通过设置mode，来显示不同的模式。当然，我们还可以设置title和detailTitle。这些都会在我们的设置中显示，在MBProgressHUD的Demo中可以看到这些不同mode的应用。</p>
+<h3 id="动画"><a href="#动画" class="headerlink" title="动画"></a>动画</h3><p>在最新的version中（以前应该也有，没留意以前的代码），MBProgressHUD消失的时候使用了动画，这使得在使用HUD过程中提供了更好的交互体验。只不过动画，只在消失的时候提供了简单的几种类型。事实上显示的时候也是有动画的，由于构造方法没有添加相关值，因此只能使用默认动画显示。如果要修改显示时的动画，有两种方案，1.修改源代码；2.添加构造新的构造方法。相对于第一种，第二种方案的可塑性会更加好，也因此建议自己在源代码中添加自己的构造方法。动画类型如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">typedef NS_ENUM(NSInteger, MBProgressHUDAnimation) &#123;</span><br><span class="line">    /// 不透明动画</span><br><span class="line">    MBProgressHUDAnimationFade,</span><br><span class="line"></span><br><span class="line">    /// 从原比例到0.5倍比例</span><br><span class="line">    MBProgressHUDAnimationZoom,</span><br><span class="line">  </span><br><span class="line">    /// 从原比例到1.5倍比例</span><br><span class="line">    MBProgressHUDAnimationZoomOut,</span><br><span class="line">    </span><br><span class="line">   /// 从原比例到0.5倍比例</span><br><span class="line">   MBProgressHUDAnimationZoomIn</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="视图"><a href="#视图" class="headerlink" title="视图"></a>视图</h3><p>MBProgressHUD分为几种类型，正如mode类型一样，期间的一些view和title是可以自由组合的。通过源码我们可以看到HUD中包含bezelView，titleLabel，detailLabel，button。然后在我们的视图中，通过模式的选择展现出来。</p>
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><p>MBProgressHUD提供了一些属性，给予我们更大的操作性，譬如宽限时间，最小显示时间，隐藏时是否从父视图移除等等。具体的如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">// 宽限时间，由于在使用HUD过程中，大部分都是用在网络请求过程中。如果网络请求过程很短，那么使用HUD在加载完毕就消失使得体验不是特别好。因此，可以使用graceTime赋予一个设定值，网络加载短于这个时间将不会显示HUD视图。</span><br><span class="line">@property (assign, nonatomic) NSTimeInterval graceTime;</span><br><span class="line"></span><br><span class="line">// 最短显示时间，默认值为0. 在网络请求很短时，为了提供一个良好的交互体验，设置一个minShowTime，就算网络加载时间少于minShowTime，也至少会显示minShowTime的时间。</span><br><span class="line">@property (assign, nonatomic) NSTimeInterval minShowTime;</span><br><span class="line"></span><br><span class="line">// 是否在隐藏时从父视图上移除，默认为NO</span><br><span class="line">@property (assign, nonatomic) BOOL removeFromSuperViewOnHide;</span><br><span class="line"></span><br><span class="line">// HUD模式，参见模式类型</span><br><span class="line">@property (assign, nonatomic) MBProgressHUDMode mode;</span><br><span class="line"></span><br><span class="line">// 设置labels和indicators的主体颜色，同样还有tintColor。</span><br><span class="line">@property (strong, nonatomic, nullable) UIColor *contentColor UI_APPEARANCE_SELECTOR;</span><br><span class="line"></span><br><span class="line">// 消失时的动画类型，参见动画。</span><br><span class="line">@property (assign, nonatomic) MBProgressHUDAnimation animationType UI_APPEARANCE_SELECTOR;</span><br><span class="line"></span><br><span class="line">// bezel视图相对于父视图的偏移量</span><br><span class="line">@property (assign, nonatomic) CGPoint offset UI_APPEARANCE_SELECTOR;</span><br><span class="line"></span><br><span class="line">// HUD各元素与HUD边缘的距离，默认为20</span><br><span class="line">@property (assign, nonatomic) CGFloat margin UI_APPEARANCE_SELECTOR;</span><br><span class="line"></span><br><span class="line">// HUD bezel的最小大笑，默认为0</span><br><span class="line">@property (assign, nonatomic) CGSize minSize UI_APPEARANCE_SELECTOR;</span><br><span class="line"></span><br><span class="line">// 只读属性，HUD是否是正方形</span><br><span class="line">@property (assign, nonatomic, getter = isSquare) BOOL square UI_APPEARANCE_SELECTOR;</span><br><span class="line"></span><br><span class="line">// 这个不太清楚是干啥的</span><br><span class="line">@property (assign, nonatomic, getter=areDefaultMotionEffectsEnabled) BOOL defaultMotionEffectsEnabled UI_APPEARANCE_SELECTOR;</span><br><span class="line"></span><br><span class="line">// 进度， 一般网络下载数据时很有效果</span><br><span class="line">@property (assign, nonatomic) float progress;</span><br></pre></td></tr></table></figure></p>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><p>在使用MBProgressHUD时，我们会发现三个构造方法可以使用。在新版本中，废弃了一些方法，替换了新方法。如下所示的三个方法，分别是生成HUD视图，隐藏HUD视图，从父视图查找HUD视图，具体描述如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"> /**</span><br><span class="line"> *</span><br><span class="line"> * 创建一个你的HUD， 添加到并显示到提供的view上。对应的隐藏方法为hideHUDForView:animated:.</span><br><span class="line"> *</span><br><span class="line"> * 注意: 这个方法设置了当隐藏时从父视图移除的属性。</span><br><span class="line"> *</span><br><span class="line"> * @param view: 将在父视图view添加HUD</span><br><span class="line"> * @param animated: 是否显示动画，如果设置YES，即表示即将显示HUD的时候会按照animationType显示，反之则不会显示动画。事实上animationType在初始化的时候，默认为.Fade，在显示的时候并不会根据设定的animationType来显示。</span><br><span class="line"> * </span><br><span class="line"> * @return 根据以上参数显示的HUD</span><br><span class="line"> *</span><br><span class="line"> * @see 与之对应的隐藏参见hideHUDForView:animated:</span><br><span class="line"> * @see 动画显示参见animationType</span><br><span class="line"> */</span><br><span class="line">  + (instancetype)showHUDAddedTo:(UIView *)view animated:(BOOL)animated;</span><br><span class="line">   </span><br><span class="line">/**</span><br><span class="line"> *</span><br><span class="line"> * 寻找view中最顶端的HUD，对应的显示方法为showHUDAddedTo:animated:.</span><br><span class="line"> *</span><br><span class="line"> * 注意：这个方法会自动设置了removeFromSuperViewOnHide，即隐藏时，从父视图移除。</span><br><span class="line"> *</span><br><span class="line"> * @param view表示在传入的view查找是否存在HUD这个子视图</span><br><span class="line"> * @param 当animated = YES时，表示在即将隐藏的时候会根据animationType的动画方式隐藏HUD视图，反之则不需要动画</span><br><span class="line"> * 当HUD消失的时候执行animations动画</span><br><span class="line"> * @return YES代表HUD找到了并且移除了，相反则返回NO</span><br><span class="line"> *</span><br><span class="line"> * @see 对应的生成方法showHUDAddedTo:animated:</span><br><span class="line"> * @see 移除过程中的动画类型</span><br><span class="line"> */</span><br><span class="line"> + (BOOL)hideHUDForView:(UIView *)view animated:(BOOL)animated;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 寻找view上最顶层的HUD视图</span><br><span class="line"> *</span><br><span class="line"> * @param view 即将要查询的父视图</span><br><span class="line"> * @return 发现的最顶层的HUD视图</span><br><span class="line"> */</span><br><span class="line"> + (nullable MBProgressHUD *)HUDForView:(UIView *)view;`</span><br></pre></td></tr></table></figure></p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>MBProgressHUD所有的初始化方法中，共同的初始化都只有一个函数<strong> - (void)commonInit </strong>。在这个方法里，进行了各类属性的初始化值的设定，以及初始化视图、更新indicators和注册通知。如下所示:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[self setupViews]; // 设置基本view</span><br><span class="line">[self updateIndicators]; // 更新indicators</span><br><span class="line">[self registerForNotifications]; // 注册通知</span><br></pre></td></tr></table></figure></p>
+<p>初始化视图和属性，这个没得说，就是我们需要显示视图的各类初始化。那么更新indicators这个方法呢，就是绑定我们我们设置的model方法，并根据model类型，设定HUD所需要显示的样式。注册通知，这个方法注册似的屏幕旋转时，需要改变的大小。</p>
+<h3 id="关于新版本"><a href="#关于新版本" class="headerlink" title="关于新版本"></a>关于新版本</h3><p>最新版本0.9.2，相对于0.9.1做了很多调整。包括一些生成方法、属性、布局等，都做了调整。譬如，现在的布局方式采用了auto layout，以前是采用数学计算的方式来完成了，算是一个不小的调整。接着，有人说，当网络请求想消失时，之前的版本是无法做到的。那么在新的版本中，我们可以设置HUD中button的title值，target方法即可完成我们需要的功能了。新版本中废弃的方法，作者也是做出了相应提示。在<strong>MBProgressHUD (Deprecated)</strong>中就可以查看那些方法是被废弃掉了的。</p>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>老实说，写一篇源码剖析还真的不知道如何下手。因为也是第一次写博客吧，导致很多都不知道哪些属于重要的知识点。仅仅是自己觉得重要一些的，会拿出来讲。但反过头来再看，整篇文章是没有很多技术性的问题探讨。还是希望如果有人看到了，能指点迷津。在此谢过……</p>
+<p>参考：<a href="http://southpeak.github.io/blog/2015/03/24/sourcecode-mbprogresshud/" target="_blank" rel="external">南峰子的技术博客</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/源码剖析/" rel="tag">#源码剖析</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/06/21/iOS-10权限使用/" rel="prev" title="iOS 10权限使用">
+                iOS 10权限使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2016/05/24/MBProgressHUD源码解读/"
+     data-title="MBProgressHUD源码解读"
+     data-content=""
+     data-url="http://yoursite.com/2016/05/24/MBProgressHUD源码解读/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/05/24/MBProgressHUD源码解读/"
+           data-title="MBProgressHUD源码解读" data-url="http://yoursite.com/2016/05/24/MBProgressHUD源码解读/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="ySenIn" />
+          <p class="site-author-name" itemprop="name">ySenIn</p>
+          <p class="site-description motion-element" itemprop="description">一个孤独的人，一个不想孤独的人</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">14</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#描述"><span class="nav-number">1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模式"><span class="nav-number">2.</span> <span class="nav-text">模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动画"><span class="nav-number">3.</span> <span class="nav-text">动画</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#视图"><span class="nav-number">4.</span> <span class="nav-text">视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#属性"><span class="nav-number">5.</span> <span class="nav-text">属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构造函数"><span class="nav-number">6.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">7.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于新版本"><span class="nav-number">8.</span> <span class="nav-text">关于新版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后记"><span class="nav-number">9.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <span id="busuanzi_container_site_pv">pv: <span id="busuanzi_value_site_pv"></span></span>
+  <span id="busuanzi_container_site_uv">uv: <span id="busuanzi_value_site_uv"></span></span>
+  <span class="author" itemprop="copyrightHolder">ySenIn</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ysenin"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>

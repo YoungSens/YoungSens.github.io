@@ -1,0 +1,675 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="源码剖析,SDWebImage,Cache," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="ySenIn's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言SDImageCache类是实现图片缓存的类，此类的缓存分为两种：磁盘缓存、保留在内存。通俗的说就是前者保存在沙盒，后者停留在内存中。问题在于，沙盒读写比较耗时，保存在内存中比较占内存，可能存在因内存过大而崩溃。对于沙盒读写耗时，如果文件不大，手机读写速度快，那也是毫厘之间的时间就能完成的。内存占有率大，这个苹果的NSCache就给我们提供了相应的方法，可以在一定程度上降低内存占有率和防止应用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SDWebImage源码之SDImageCache">
+<meta property="og:url" content="http://yoursite.com/2016/07/19/SDWebImage源码之SDImageCache/index.html">
+<meta property="og:site_name" content="ySenIn's Blog">
+<meta property="og:description" content="前言SDImageCache类是实现图片缓存的类，此类的缓存分为两种：磁盘缓存、保留在内存。通俗的说就是前者保存在沙盒，后者停留在内存中。问题在于，沙盒读写比较耗时，保存在内存中比较占内存，可能存在因内存过大而崩溃。对于沙盒读写耗时，如果文件不大，手机读写速度快，那也是毫厘之间的时间就能完成的。内存占有率大，这个苹果的NSCache就给我们提供了相应的方法，可以在一定程度上降低内存占有率和防止应用">
+<meta property="og:updated_time" content="2016-07-18T16:57:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SDWebImage源码之SDImageCache">
+<meta name="twitter:description" content="前言SDImageCache类是实现图片缓存的类，此类的缓存分为两种：磁盘缓存、保留在内存。通俗的说就是前者保存在沙盒，后者停留在内存中。问题在于，沙盒读写比较耗时，保存在内存中比较占内存，可能存在因内存过大而崩溃。对于沙盒读写耗时，如果文件不大，手机读写速度快，那也是毫厘之间的时间就能完成的。内存占有率大，这个苹果的NSCache就给我们提供了相应的方法，可以在一定程度上降低内存占有率和防止应用">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> SDWebImage源码之SDImageCache | ySenIn's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">ySenIn's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">ySen</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                SDWebImage源码之SDImageCache
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-19T00:36:26+08:00" content="2016-07-19">
+              2016-07-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码剖析/" itemprop="url" rel="index">
+                    <span itemprop="name">源码剖析</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/07/19/SDWebImage源码之SDImageCache/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/19/SDWebImage源码之SDImageCache/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>SDImageCache类是实现图片缓存的类，此类的缓存分为两种：磁盘缓存、保留在内存。通俗的说就是前者保存在沙盒，后者停留在内存中。问题在于，沙盒读写比较耗时，保存在内存中比较占内存，可能存在因内存过大而崩溃。对于沙盒读写耗时，如果文件不大，手机读写速度快，那也是毫厘之间的时间就能完成的。内存占有率大，这个苹果的NSCache就给我们提供了相应的方法，可以在一定程度上降低内存占有率和防止应用崩溃，关于NSCache可以看另外一篇文章<a href="http://blog.ysenin.com/2016/07/17/NSCache%E7%9B%B8%E5%85%B3%E8%A7%A3%E8%AF%BB/" target="_blank" rel="external">NSCache相关解读</a>。</p>
+<h3 id="缓存类型"><a href="#缓存类型" class="headerlink" title="缓存类型"></a>缓存类型</h3><p>SDImageCache提供了三种枚举类型，如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 读取缓存枚举类型</span><br><span class="line">typedef NS_ENUM(NSInteger, SDImageCacheType) &#123;</span><br><span class="line">    SDImageCacheTypeNone, // image不可用于SDWebImage缓存，但可以从网络下载</span><br><span class="line">    SDImageCacheTypeDisk, // 图片可以从磁盘缓存空间获取</span><br><span class="line">    SDImageCacheTypeMemory // 图片从内存空间获取</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>如上，我们读取缓存的时候，可以从网络上下载，从磁盘读区，也可以从内存空间获得。当然，具体是怎样实现由具体的技术实现来完成。</p>
+<h3 id="Block"><a href="#Block" class="headerlink" title="Block"></a>Block</h3><p>在SDImageCache中，给我们提供了三个block<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 通过key查询，缓存（内存和磁盘）是否存在缓存，并返回图片数据和缓存来源</span><br><span class="line">typedef void(^SDWebImageQueryCompletedBlock)(UIImage *image, SDImageCacheType cacheType);</span><br><span class="line"></span><br><span class="line">// 检查key是否存在磁盘缓存中</span><br><span class="line">typedef void(^SDWebImageCheckCacheCompletionBlock)(BOOL isInCache);</span><br><span class="line"></span><br><span class="line">// 计算磁盘缓存大小，返回磁盘缓存数目和总大小</span><br><span class="line">typedef void(^SDWebImageCalculateSizeBlock)(NSUInteger fileCount, NSUInteger totalSize);</span><br></pre></td></tr></table></figure></p>
+<p>如注释所示，前两个block查询key的缓存数据，第三个block是计算磁盘缓存大小。这几个block在后面的代码实现中有很重要的作用，因此我们做一个重要了解。</p>
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 此属性主要用于gif图片类，解压被下载并缓存的图片可以提高性能，但是会消耗很多内存，默认为yes，如果遇到因为内存消耗过大而导致崩溃，可以设置为no</span><br><span class="line"> */</span><br><span class="line">@property (assign, nonatomic) BOOL shouldDecompressImages;</span><br><span class="line"></span><br><span class="line">// 允许iCloud备份，默认为yes</span><br><span class="line">@property (assign, nonatomic) BOOL shouldDisableiCloud;</span><br><span class="line"></span><br><span class="line">// 使用内存缓存，默认yes</span><br><span class="line">@property (assign, nonatomic) BOOL shouldCacheImagesInMemory;</span><br><span class="line"></span><br><span class="line">// 内存中图片最大的缓存花费（最大缓存容量），花费的方法是保留在内存中的像素个数</span><br><span class="line">@property (assign, nonatomic) NSUInteger maxMemoryCost;</span><br><span class="line"></span><br><span class="line">// 最大可以缓存的图片对象</span><br><span class="line">@property (assign, nonatomic) NSUInteger maxMemoryCountLimit;</span><br><span class="line"></span><br><span class="line">// 图片最长缓存时间</span><br><span class="line">@property (assign, nonatomic) NSInteger maxCacheAge;</span><br><span class="line"></span><br><span class="line">// 最大比特缓存</span><br><span class="line">@property (assign, nonatomic) NSUInteger maxCacheSize;</span><br></pre></td></tr></table></figure>
+<p>关于属性，事实上和NSCache的属性差不多。这里需要说一下<strong>maxCacheAge</strong>的实现方式。maxCacheAge如注释所示，代表最长的缓存时间，这里仅仅是针对于磁盘缓存而言。maxCacheAge仅仅是一个相对的时间，并不是绝对的。从源码可以看出，磁盘缓存清理会到用到<strong>- (void)cleanDiskWithCompletionBlock:(SDWebImageNoParamsBlock)completionBlock</strong>方法，在此方法，系统会去检索磁盘，是否存在缓存文件，并读出可用路径。之后通过文件最后修改的时间，和离现在maxCacheAge之前的时间节点时间相互比较，判断是否应该删除。那么<strong>重点</strong>在于，在什么地方会调用此方法呢？还是回到源码，如下代码可以发现问题：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- (id)initWithNamespace:(NSString *)ns diskCacheDirectory:(NSString *)directory &#123;</span><br><span class="line">    if ((self = [super init])) &#123;</span><br><span class="line">        /* 各种初始化 */</span><br><span class="line">        // 程序受到内存警告，需要进行内存缓存清理</span><br><span class="line">        [[NSNotificationCenter defaultCenter] addObserver:self</span><br><span class="line">                                                 selector:@selector(clearMemory)</span><br><span class="line">                                                     name:UIApplicationDidReceiveMemoryWarningNotification</span><br><span class="line">                                                   object:nil];</span><br><span class="line"></span><br><span class="line">        // 程序即将被终止（被杀死）,清理磁盘缓存</span><br><span class="line">        [[NSNotificationCenter defaultCenter] addObserver:self</span><br><span class="line">                                                 selector:@selector(cleanDisk)</span><br><span class="line">                                                     name:UIApplicationWillTerminateNotification</span><br><span class="line">                                                   object:nil];</span><br><span class="line"></span><br><span class="line">        // 程序进入后台后，需要清理的磁盘缓存</span><br><span class="line">        [[NSNotificationCenter defaultCenter] addObserver:self</span><br><span class="line">                                                 selector:@selector(backgroundCleanDisk)</span><br><span class="line">                                                     name:UIApplicationDidEnterBackgroundNotification</span><br><span class="line">                                                   object:nil];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return self;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从上面代码，我们在新建缓存类的时候注册了三个监听事件。从后面两个监听我们可以看到程序在即将被终止是会调用一次磁盘清理，在程序进入后台需要清理一次。假如程序长时间留在前台，且不被杀死，超过了maxCacheAge时间，缓存磁盘文件还是可能存在于磁盘的。这也就是为啥，说磁盘maxCacheAge是相对的。</p>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>针对SDImageCache的方法，这里只会给出几个重要的方法实现，因为其它都是针对于这几个方法，通过不同的参数形成的。首先缓存很重要的一个东西就是key，这个就是图片的url，由于直接存储url不是特别聪明的办法，因此作者将url转换成了md5编码，取其16进制的编码作为最终的key。然后，磁盘缓存一般都是异步读写。</p>
+<h4 id="磁盘存储"><a href="#磁盘存储" class="headerlink" title="磁盘存储"></a>磁盘存储</h4><p>磁盘存储都会统一调用下面这两个方法的代码，具体的可以结合源代码和注释来看，这会让你在读代码时事半功倍。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">// 缓存图片（image，是否从新计算，图片数据，key，是否磁盘缓存）</span><br><span class="line">- (void)storeImage:(UIImage *)image recalculateFromImage:(BOOL)recalculate imageData:(NSData *)imageData forKey:(NSString *)key toDisk:(BOOL)toDisk &#123;</span><br><span class="line">    if (!image || !key) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    // 如果允许内存缓存</span><br><span class="line">    if (self.shouldCacheImagesInMemory) &#123; // 内存缓存</span><br><span class="line">        NSUInteger cost = SDCacheCostForImage(image);</span><br><span class="line">        [self.memCache setObject:image forKey:key cost:cost]; // 跳至内存缓存的方法</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (toDisk) &#123; // 进行异步磁盘缓存</span><br><span class="line">        dispatch_async(self.ioQueue, ^&#123;</span><br><span class="line">            NSData *data = imageData;</span><br><span class="line"></span><br><span class="line">            if (image &amp;&amp; (recalculate || !data)) &#123;</span><br><span class="line">#if TARGET_OS_IPHONE // 是否是iOS平台</span><br><span class="line">                </span><br><span class="line">                int alphaInfo = CGImageGetAlphaInfo(image.CGImage); // 获取图片的通道信息</span><br><span class="line">                BOOL hasAlpha = !(alphaInfo == kCGImageAlphaNone ||</span><br><span class="line">                                  alphaInfo == kCGImageAlphaNoneSkipFirst ||</span><br><span class="line">                                  alphaInfo == kCGImageAlphaNoneSkipLast);</span><br><span class="line">                BOOL imageIsPng = hasAlpha; // 是否有alpha通道</span><br><span class="line"></span><br><span class="line">                // But if we have an image data, we will look at the preffix</span><br><span class="line">                if ([imageData length] &gt;= [kPNGSignatureData length]) &#123; // 判断数据的前8个字节，以确定使用哪种转换方式</span><br><span class="line">                    imageIsPng = ImageDataHasPNGPreffix(imageData);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                if (imageIsPng) &#123; // png 格式</span><br><span class="line">                    data = UIImagePNGRepresentation(image);</span><br><span class="line">                &#125;</span><br><span class="line">                else &#123;</span><br><span class="line">                    data = UIImageJPEGRepresentation(image, (CGFloat)1.0);</span><br><span class="line">                &#125;</span><br><span class="line">#else</span><br><span class="line">                data = [NSBitmapImageRep representationOfImageRepsInArray:image.representations usingType: NSJPEGFileType properties:nil];</span><br><span class="line">#endif</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            [self storeImageDataToDisk:data forKey:key]; // 通过key进行磁盘缓存</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 磁盘缓存，通过key</span><br><span class="line">- (void)storeImageDataToDisk:(NSData *)imageData forKey:(NSString *)key &#123;</span><br><span class="line">    </span><br><span class="line">    if (!imageData) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    // 判断磁盘缓存路径是否存在，若不存在则创建磁盘缓存路径</span><br><span class="line">    if (![_fileManager fileExistsAtPath:_diskCachePath]) &#123;</span><br><span class="line">        [_fileManager createDirectoryAtPath:_diskCachePath withIntermediateDirectories:YES attributes:nil error:NULL];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    // get cache Path for image key</span><br><span class="line">    // 缓存文件路径</span><br><span class="line">    NSString *cachePathForKey = [self defaultCachePathForKey:key]; // md5之后的url</span><br><span class="line">    // transform to NSUrl</span><br><span class="line">    // 转换成nsurl</span><br><span class="line">    NSURL *fileURL = [NSURL fileURLWithPath:cachePathForKey];</span><br><span class="line">    </span><br><span class="line">    // 创建缓存文件</span><br><span class="line">    [_fileManager createFileAtPath:cachePathForKey contents:imageData attributes:nil];</span><br><span class="line">    </span><br><span class="line">    // disable iCloud backup</span><br><span class="line">    // 启用iCloud备份</span><br><span class="line">    if (self.shouldDisableiCloud) &#123;</span><br><span class="line">        [fileURL setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="磁盘查找"><a href="#磁盘查找" class="headerlink" title="磁盘查找"></a>磁盘查找</h4><p>磁盘查找需要注意一点的就是，在文件存储的时候，可能存在没有后缀扩展名的存在，因此需要检查两次，依次是存在扩展名，一次是不存在扩展名。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">// 判断磁盘文件是否存在key的缓存文件</span><br><span class="line">- (BOOL)diskImageExistsWithKey:(NSString *)key &#123;</span><br><span class="line">    BOOL exists = NO;</span><br><span class="line">    </span><br><span class="line">    // 这是期望通过连接文件管理在其他的io队列，但是我们使用了单例,来自苹果官方文档的解释是：文件管理的单例对象方法，在多线程能安全的调用。</span><br><span class="line">    </span><br><span class="line">    // 通过key获取缓存文件路径</span><br><span class="line">    exists = [[NSFileManager defaultManager] fileExistsAtPath:[self defaultCachePathForKey:key]];</span><br><span class="line"></span><br><span class="line">    // 根据https://github.com/rs/SDWebImage/pull/976，可能key添加了后缀扩展名,因此需要判断key是否存在后缀扩展名</span><br><span class="line">    if (!exists) &#123;</span><br><span class="line">        // key存在后缀，需要删除扩展名，只保留文件名</span><br><span class="line">        exists = [[NSFileManager defaultManager] fileExistsAtPath:[[self defaultCachePathForKey:key] stringByDeletingPathExtension]];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    return exists;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 方法作用同上，只是实现了异步判断，添加回调block</span><br><span class="line">- (void)diskImageExistsWithKey:(NSString *)key completion:(SDWebImageCheckCacheCompletionBlock)completionBlock &#123;</span><br><span class="line">    dispatch_async(_ioQueue, ^&#123;</span><br><span class="line">        BOOL exists = [_fileManager fileExistsAtPath:[self defaultCachePathForKey:key]];</span><br><span class="line"></span><br><span class="line">        if (!exists) &#123;</span><br><span class="line">            exists = [_fileManager fileExistsAtPath:[[self defaultCachePathForKey:key] stringByDeletingPathExtension]];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 异步结束，执行回调</span><br><span class="line">        if (completionBlock) &#123;</span><br><span class="line">            dispatch_async(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                completionBlock(exists);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="磁盘删除"><a href="#磁盘删除" class="headerlink" title="磁盘删除"></a>磁盘删除</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">- (void)removeImageForKey:(NSString *)key fromDisk:(BOOL)fromDisk withCompletion:(SDWebImageNoParamsBlock)completion &#123;</span><br><span class="line">    </span><br><span class="line">    if (key == nil) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 从内存删除gif数据</span><br><span class="line">    if (self.shouldCacheImagesInMemory) &#123;</span><br><span class="line">        [self.memCache removeObjectForKey:key];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (fromDisk) &#123;</span><br><span class="line">        dispatch_async(self.ioQueue, ^&#123; // 异步队列</span><br><span class="line">            // 删除路径下的数据</span><br><span class="line">            [_fileManager removeItemAtPath:[self defaultCachePathForKey:key] error:nil];</span><br><span class="line">            </span><br><span class="line">            if (completion) &#123;</span><br><span class="line">                dispatch_async(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                    completion();</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; else if (completion)&#123;</span><br><span class="line">        completion();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="内存缓存"><a href="#内存缓存" class="headerlink" title="内存缓存"></a>内存缓存</h4><p>SDImageCache两种缓存方式：磁盘缓存、内存缓存。上面介绍了磁盘缓存的一些读写的重要方法，那么内存缓存SDImageCache则是使用了NSCache的方式去完成的。因此，如果想学习NSCache可以看我另外一篇文章，也可以自己百度，那一块儿就不再深入探究了。</p>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>至此，关于SDImageCache的讲解就到此结束了。上面存在的源码比较多，当然也有一定的文字描述。里面提到了一些重要的知识点，还望细细品尝，如果有啥问题可以留言给我。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/源码剖析/" rel="tag">#源码剖析</a>
+          
+            <a href="/tags/SDWebImage/" rel="tag">#SDWebImage</a>
+          
+            <a href="/tags/Cache/" rel="tag">#Cache</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/17/NSCache相关解读/" rel="next" title="NSCache相关解读">
+                <i class="fa fa-chevron-left"></i> NSCache相关解读
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/19/SDWebImage之SDWebImageDownloader相关/" rel="prev" title="SDWebImage之SDWebImageDownloader相关">
+                SDWebImage之SDWebImageDownloader相关 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2016/07/19/SDWebImage源码之SDImageCache/"
+     data-title="SDWebImage源码之SDImageCache"
+     data-content=""
+     data-url="http://yoursite.com/2016/07/19/SDWebImage源码之SDImageCache/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/07/19/SDWebImage源码之SDImageCache/"
+           data-title="SDWebImage源码之SDImageCache" data-url="http://yoursite.com/2016/07/19/SDWebImage源码之SDImageCache/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="ySenIn" />
+          <p class="site-author-name" itemprop="name">ySenIn</p>
+          <p class="site-description motion-element" itemprop="description">一个孤独的人，一个不想孤独的人</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">14</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存类型"><span class="nav-number">2.</span> <span class="nav-text">缓存类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Block"><span class="nav-number">3.</span> <span class="nav-text">Block</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#属性"><span class="nav-number">4.</span> <span class="nav-text">属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法"><span class="nav-number">5.</span> <span class="nav-text">方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#磁盘存储"><span class="nav-number">5.1.</span> <span class="nav-text">磁盘存储</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#磁盘查找"><span class="nav-number">5.2.</span> <span class="nav-text">磁盘查找</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#磁盘删除"><span class="nav-number">5.3.</span> <span class="nav-text">磁盘删除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存缓存"><span class="nav-number">5.4.</span> <span class="nav-text">内存缓存</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后记"><span class="nav-number">6.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <span id="busuanzi_container_site_pv">pv: <span id="busuanzi_value_site_pv"></span></span>
+  <span id="busuanzi_container_site_uv">uv: <span id="busuanzi_value_site_uv"></span></span>
+  <span class="author" itemprop="copyrightHolder">ySenIn</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ysenin"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>
