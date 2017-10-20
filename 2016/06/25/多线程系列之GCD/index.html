@@ -92,7 +92,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/06/25/多线程系列之GCD/index.html">
 <meta property="og:site_name" content="ySenIn's Blog">
 <meta property="og:description" content="前言网上关于多线程的文章已经烂大街了，问题是为啥我还要继续写呢？没有为啥，单纯想写。看到有些文章空泛的描述出使用的什么方法来生成多线程，然后就扔一堆代码，这种做法真是令人作呕，至少我是这么觉得的。好吧，调侃的差不多了，也来写写自己对于多线程的理解，那么这一片会首先介绍GCD。文章主要参考[Objective-C高级编程、iOS与OS X多线程和内存指南]，一本很不错的书。算了还是不要说参考了，摘抄">
-<meta property="og:updated_time" content="2017-10-20T02:54:52.328Z">
+<meta property="og:updated_time" content="2017-10-20T03:38:37.283Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="多线程系列之GCD之一">
 <meta name="twitter:description" content="前言网上关于多线程的文章已经烂大街了，问题是为啥我还要继续写呢？没有为啥，单纯想写。看到有些文章空泛的描述出使用的什么方法来生成多线程，然后就扔一堆代码，这种做法真是令人作呕，至少我是这么觉得的。好吧，调侃的差不多了，也来写写自己对于多线程的理解，那么这一片会首先介绍GCD。文章主要参考[Objective-C高级编程、iOS与OS X多线程和内存指南]，一本很不错的书。算了还是不要说参考了，摘抄">
@@ -340,7 +340,25 @@
 </blockquote>
 <p>当然，解决上述问题的方法会很多，虽然有点难，比起出现的概率和性能的提升，这点难点都不足以阻碍使用GCD。</p>
 <p>异步的源代码如下所示：<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dispatch_async(queue, &#123; </span><br><span class="line">    <span class="comment">// 想要执行的任务</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
-<p>异步执行处理包涵两种队列: Serial Dispatch Queue、Concurrent Dispatch Queue。<br>| Dispatch Queue的种类       | 说明                 |<br>|—————————|———————|<br>| Serial Dispatch Queue     | 等待现在执行中处理结束  |<br>| Concurrent Dispatch Queue | 不等待现在执行中处理结束 |</p>
+<p>异步执行处理包涵两种队列: Serial Dispatch Queue、Concurrent Dispatch Queue。</p>
+<table>
+<thead>
+<tr>
+<th>Dispatch Queue的种类</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Serial Dispatch Queue</td>
+<td>等待现在执行中处理结束</td>
+</tr>
+<tr>
+<td>Concurrent Dispatch Queue</td>
+<td>不等待现在执行中处理结束</td>
+</tr>
+</tbody>
+</table>
 <p>什么意思呢？举个例子，我们去银行办理业务的时候，通常都会拿号，针对不同的业务，我们可以拿不同形式的号，譬如VIP业务和普通的业务。由于VIP业务不是人人都需要，通常只保留一个通道，相反，普通业务办理的人数会很多，那就需要很多通道。对于办理VIP业务的人来讲，只有等号数在自己前面的人办理完毕后，自己才能去办理自己的业务，这就是我们所说的Serial Dispatch Queue。而办理普通业务的人呢？只要前面通道空闲了，后面的人就可以有序的去办理自己的业务，Concurrent Dispatch Queue也就对应这种场景了。</p>
 <h5 id="dispatch-queue-create创建"><a href="#dispatch-queue-create创建" class="headerlink" title="dispatch_queue_create创建"></a>dispatch_queue_create创建</h5><p>上面讲的两种队列创建，可以利用dispatch_queue_create来创建：<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Serial Dispatch Queue</span></span><br><span class="line"><span class="keyword">let</span> queue = dispatch_queue_create(<span class="string">"com.ysenin.multiplethread"</span>, <span class="type">DISPATCH_QUEUE_SERIAL</span>)</span><br><span class="line"><span class="keyword">let</span> queue = dispatch_queue_create(<span class="string">"com.ysenin.multiplethread"</span>, <span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Concurrent Dispatch Queue</span></span><br><span class="line"><span class="keyword">let</span> queue = dispatch_queue_create(<span class="string">"com.ysenin.multiplethread"</span>, <span class="type">DISPATCH_QUEUE_CONCURRENT</span>)</span><br></pre></td></tr></table></figure></p>
 <p>通过上面的代码我们可以看到，dispatch_queue_create含有两个参数：第一个是队列名称，第二个是类型。对于队列名，苹果官方的描述如下：</p>

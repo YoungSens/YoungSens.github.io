@@ -556,7 +556,7 @@
     <link href="http://yoursite.com/2016/06/25/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%B3%BB%E5%88%97%E4%B9%8BGCD/"/>
     <id>http://yoursite.com/2016/06/25/多线程系列之GCD/</id>
     <published>2016-06-25T08:45:34.000Z</published>
-    <updated>2017-10-20T02:54:52.328Z</updated>
+    <updated>2017-10-20T03:38:37.283Z</updated>
     
     <content type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;网上关于多线程的文章已经烂大街了，问题是为啥我还要继续写呢？没有为啥，单纯想写。看到有些文章空泛的描述出使用的什么方法来生成多线程，然后就扔一堆代码，这种做法真是令人作呕，至少我是这么觉得的。好吧，调侃的差不多了，也来写写自己对于多线程的理解，那么这一片会首先介绍GCD。文章主要参考[Objective-C高级编程、iOS与OS X多线程和内存指南]，一本很不错的书。算了还是不要说参考了，摘抄。&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -579,7 +579,25 @@
 &lt;/blockquote&gt;
 &lt;p&gt;当然，解决上述问题的方法会很多，虽然有点难，比起出现的概率和性能的提升，这点难点都不足以阻碍使用GCD。&lt;/p&gt;
 &lt;p&gt;异步的源代码如下所示：&lt;br&gt;&lt;figure class=&quot;highlight swift&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;dispatch_async(queue, &amp;#123; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;comment&quot;&gt;// 想要执行的任务&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;异步执行处理包涵两种队列: Serial Dispatch Queue、Concurrent Dispatch Queue。&lt;br&gt;| Dispatch Queue的种类       | 说明                 |&lt;br&gt;|—————————|———————|&lt;br&gt;| Serial Dispatch Queue     | 等待现在执行中处理结束  |&lt;br&gt;| Concurrent Dispatch Queue | 不等待现在执行中处理结束 |&lt;/p&gt;
+&lt;p&gt;异步执行处理包涵两种队列: Serial Dispatch Queue、Concurrent Dispatch Queue。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Dispatch Queue的种类&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Serial Dispatch Queue&lt;/td&gt;
+&lt;td&gt;等待现在执行中处理结束&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Concurrent Dispatch Queue&lt;/td&gt;
+&lt;td&gt;不等待现在执行中处理结束&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
 &lt;p&gt;什么意思呢？举个例子，我们去银行办理业务的时候，通常都会拿号，针对不同的业务，我们可以拿不同形式的号，譬如VIP业务和普通的业务。由于VIP业务不是人人都需要，通常只保留一个通道，相反，普通业务办理的人数会很多，那就需要很多通道。对于办理VIP业务的人来讲，只有等号数在自己前面的人办理完毕后，自己才能去办理自己的业务，这就是我们所说的Serial Dispatch Queue。而办理普通业务的人呢？只要前面通道空闲了，后面的人就可以有序的去办理自己的业务，Concurrent Dispatch Queue也就对应这种场景了。&lt;/p&gt;
 &lt;h5 id=&quot;dispatch-queue-create创建&quot;&gt;&lt;a href=&quot;#dispatch-queue-create创建&quot; class=&quot;headerlink&quot; title=&quot;dispatch_queue_create创建&quot;&gt;&lt;/a&gt;dispatch_queue_create创建&lt;/h5&gt;&lt;p&gt;上面讲的两种队列创建，可以利用dispatch_queue_create来创建：&lt;br&gt;&lt;figure class=&quot;highlight swift&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// Serial Dispatch Queue&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;let&lt;/span&gt; queue = dispatch_queue_create(&lt;span class=&quot;string&quot;&gt;&quot;com.ysenin.multiplethread&quot;&lt;/span&gt;, &lt;span class=&quot;type&quot;&gt;DISPATCH_QUEUE_SERIAL&lt;/span&gt;)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;let&lt;/span&gt; queue = dispatch_queue_create(&lt;span class=&quot;string&quot;&gt;&quot;com.ysenin.multiplethread&quot;&lt;/span&gt;, &lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// Concurrent Dispatch Queue&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;let&lt;/span&gt; queue = dispatch_queue_create(&lt;span class=&quot;string&quot;&gt;&quot;com.ysenin.multiplethread&quot;&lt;/span&gt;, &lt;span class=&quot;type&quot;&gt;DISPATCH_QUEUE_CONCURRENT&lt;/span&gt;)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;通过上面的代码我们可以看到，dispatch_queue_create含有两个参数：第一个是队列名称，第二个是类型。对于队列名，苹果官方的描述如下：&lt;/p&gt;
