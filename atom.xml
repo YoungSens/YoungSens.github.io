@@ -547,9 +547,10 @@
     <link href="http://yoursite.com/2016/06/25/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%B3%BB%E5%88%97%E4%B9%8BGCD/"/>
     <id>http://yoursite.com/2016/06/25/多线程系列之GCD/</id>
     <published>2016-06-25T08:45:34.000Z</published>
-    <updated>2016-07-01T07:37:04.000Z</updated>
+    <updated>2017-10-20T02:54:52.328Z</updated>
     
     <content type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;网上关于多线程的文章已经烂大街了，问题是为啥我还要继续写呢？没有为啥，单纯想写。看到有些文章空泛的描述出使用的什么方法来生成多线程，然后就扔一堆代码，这种做法真是令人作呕，至少我是这么觉得的。好吧，调侃的差不多了，也来写写自己对于多线程的理解，那么这一片会首先介绍GCD。文章主要参考[Objective-C高级编程、iOS与OS X多线程和内存指南]，一本很不错的书。算了还是不要说参考了，摘抄。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;blockquote&gt;
 &lt;p&gt;示例代码语言：Swift 2.2&lt;br&gt;Xcode版本: Xcode 7.3&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -625,7 +626,7 @@
     
     <summary type="html">
     
-      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;网上关于多线程的文章已经烂大街了，问题是为啥我还要继续写呢？没有为啥，单纯想写。看到有些文章空泛的描述出使用的什么方法来生成多线程，然后就扔
+      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;网上关于多线程的文章已经烂大街了，问题是为啥我还要继续写呢？没有为啥，单纯想写。看到有些文章空泛的描述出使用的什么方法来生成多线程，然后就扔一堆代码，这种做法真是令人作呕，至少我是这么觉得的。好吧，调侃的差不多了，也来写写自己对于多线程的理解，那么这一片会首先介绍GCD。文章主要参考[Objective-C高级编程、iOS与OS X多线程和内存指南]，一本很不错的书。算了还是不要说参考了，摘抄。&lt;/p&gt;
     
     </summary>
     
